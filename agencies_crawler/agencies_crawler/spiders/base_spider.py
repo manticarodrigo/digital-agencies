@@ -12,6 +12,7 @@ class BasePartnersSpider(scrapy.Spider):
     ranking_selector = None
     brief_selector = None
     industries_selector = None
+    partners_text_selector = None
 
     def get_text_by_selector(self, soup, selector):
         """ Gets text by selector """
@@ -61,6 +62,9 @@ class BasePartnersSpider(scrapy.Spider):
         """ Gets agency website url """
         return self.get_link_from_selector(soup, self.website_url_selector)
 
+    def get_agency_reviews(self, soup):
+        pass
+
     def parse(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
@@ -87,4 +91,5 @@ class BasePartnersSpider(scrapy.Spider):
         agency['ranking'] = self.get_agency_ranking(soup)
         agency['brief'] = self.get_agency_brief(soup)
         agency['industries'] = self.get_agency_industries(soup)
+        agency['reviews'] = self.get_agency_reviews(soup)
         yield agency

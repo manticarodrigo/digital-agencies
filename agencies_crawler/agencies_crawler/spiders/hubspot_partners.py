@@ -17,3 +17,10 @@ class HubspotPartnersSpider(BasePartnersSpider):
     ranking_selector = 'p.partners-details__hero-icon'
     brief_selector = 'div.partners-details__about-container > p'
     industries_selector = 'div.partners-details__fieldset.industry > ul.partners-details__list'
+    partners_text_selector = '.partners-card-ratings > p'
+
+    def get_agency_reviews(self, soup):
+        text = self.get_text_by_selector(soup, self.partners_text_selector)
+        numbers = [int(s) for s in text.split() if s.isdigit()]
+        return numbers[0] if numbers else 0
+    
