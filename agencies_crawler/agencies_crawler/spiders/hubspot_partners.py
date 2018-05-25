@@ -10,4 +10,4 @@ class HubspotPartnersSpider(BasePartnersSpider):
     pagination_selector = None
     links_selector = 'a.directories__link'
     title_selector = '.partners-details__hero-text > h2'
-        
+    short_address_selector = 'p.partners-details__hero-location'
