@@ -11,4 +11,6 @@ class BingPartnersSpider(BasePartnersSpider):
     ]
     pagination_selector = None
     links_selector = 'a.profile-link'
-    title_selector = 'h1.page-title'
+    name_selector = 'h1.page-title'
+    ranking_selector = 'div.partner-badge-large > div.type'
+    brief_selector = 'section.rule-bottom > div.container > div.row > div:nth-of-type(3) > div'
