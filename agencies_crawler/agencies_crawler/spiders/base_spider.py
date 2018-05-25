@@ -8,6 +8,14 @@ class BasePartnersSpider(scrapy.Spider):
     pagination_selector = None
     title_selector = None
     short_address_selector = None
+    website_url_selector = None
+
+    def get_link_from_selector(self, soup, selector):
+        """ Gets agency website url """
+        if selector:
+            url = soup.select_one(selector)
+            if url is not None:
+                return url.get('href')
 
     def get_profiles_urls(self, soup):
         """ Links to follow up to get content """
@@ -25,6 +33,10 @@ class BasePartnersSpider(scrapy.Spider):
         """ Gets agency name from the title """
         short_address = soup.select_one(self.short_address_selector)
         return short_address.get_text().strip() if short_address else 'No short address found'
+
+    def get_agency_website_url(self, soup):
+        """ Gets agency website url """
+        return self.get_link_from_selector(soup, self.website_url_selector)
 
     def parse(self, response):
         # Follow links to post pages
@@ -48,4 +60,5 @@ class BasePartnersSpider(scrapy.Spider):
         agency['source'] = response.url
         agency['name'] = self.get_agency_name(soup)
         agency['short_address'] = self.get_agency_short_address(soup)
+        agency['website_url'] = self.get_agency_website_url(soup)
         yield agency

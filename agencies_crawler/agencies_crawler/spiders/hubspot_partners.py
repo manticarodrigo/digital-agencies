@@ -11,3 +11,4 @@ class HubspotPartnersSpider(BasePartnersSpider):
     links_selector = 'a.directories__link'
     title_selector = '.partners-details__hero-text > h2'
     short_address_selector = 'p.partners-details__hero-location'
+    website_url_selector = '.partners-details__hero-website.partners-listing-website'
