@@ -50,10 +50,10 @@ class BasePartnersSpider(scrapy.Spider):
         return self.get_text_by_selector(soup, self.brief_selector)
 
     def get_agency_industries(self, soup):
-        """ Gets agency brief """
+        """ Gets agency industries """
         if self.industries_selector:
             item_arr = soup.select_one(self.industries_selector).children
-            string = " -".join([el.get_text().strip() for el in item_arr if el != '\n'])
+            string = "\n".join([el.get_text().strip() for el in item_arr if el != '\n'])
             return string
 
     def get_agency_website_url(self, soup):

@@ -17,3 +17,11 @@ class HubspotPartnersSpider(BasePartnersSpider):
     ranking_selector = 'p.partners-details__hero-icon'
     brief_selector = 'div.partners-details__about-container > p'
     industries_selector = 'div.partners-details__fieldset.industry > ul.partners-details__list'
+
+    def get_agency_industries(self, soup):
+        if self.industries_selector:
+            item_arr = soup.select_one(self.industries_selector).find_all('li')
+            string = "\n".join([el.get_text().strip() for el in item_arr])
+            second_item_arr = soup.select_one('div.directories__toggle-contents').find_all('li')
+            string += "\n" + "\n".join([el.get_text().strip() for el in second_item_arr])
+            return string
