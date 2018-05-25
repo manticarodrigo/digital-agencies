@@ -16,7 +16,7 @@ To Install Requirements run:
 ::
     
     $ pip install pipenv (globally)
-    $ pipenv install
+    $ pipenv install --dev
     $ pipenv shell (to activate env)
 
 
@@ -35,4 +35,5 @@ Run Scrappers
 
 ::
 
-    $ ​pipenv run scrapy crawl spider_name
+    $ scrapy crawl spider_name
+    $ scrapy crawl hubspot_partners -o reports/test.csv
