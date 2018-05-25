@@ -37,6 +37,7 @@ class BasePartnersSpider(scrapy.Spider):
     
     def get_list_by_selector(self, soup, selector):
         """ Gets list by selector """
+        # @TODO its failing in some cases
         if selector:
             item_arr = soup.select_one(selector).children
             string = '\n'.join([el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)])
@@ -99,9 +100,7 @@ class BasePartnersSpider(scrapy.Spider):
         return self.get_text_by_selector(soup, self.budget_selector)
 
     def get_agency_languages(self, soup):
-        if self.languages_selector:
-            elements = soup.select(self.languages_selector)
-            return "\n".join([el.get_text().strip() for el in elements])
+        return self.get_list_by_selector(soup, self.languages_selector)
 
     def parse(self, response):
         # Follow links to post pages
