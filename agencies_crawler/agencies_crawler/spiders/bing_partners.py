@@ -7,6 +7,6 @@ class BingPartnersSpider(scrapy.Spider):
     start_urls = [
         'https://advertise.bingads.microsoft.com/en-us/resources/bing-partner-program/partner-directory'
     ]
-
-    def parse(self, response):
-        pass
+    pagination_selector = None
+    links_selector = 'a.profile-link'
+    title_selector = 'h1.page-title'
