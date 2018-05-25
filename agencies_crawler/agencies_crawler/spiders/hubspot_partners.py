@@ -18,6 +18,7 @@ class HubspotPartnersSpider(BasePartnersSpider):
     brief_selector = 'div.partners-details__about-container > p'
     industries_selector = 'div.partners-details__fieldset.industry > ul.partners-details__list'
     partners_text_selector = '.partners-card-ratings > p'
+    budget_selector = '.partners-details__fieldset.budget .circle upper'
 
     def get_agency_reviews(self, soup):
         text = self.get_text_by_selector(soup, self.partners_text_selector)
