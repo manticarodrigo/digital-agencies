@@ -1,0 +1,47 @@
+### OSX ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# workspace files are user-specific
+*.sublime-workspace
+
+# project files should be checked into the repository, unless a significant
+# proportion of contributors will probably not be using SublimeText
+# *.sublime-project
+
+# Basics
+*.py[cod]
+__pycache__
+
+# Logs
+logs
+*.log
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+htmlcov
+
+# Pycharm
+.idea/*
+
+# Vim
+*~
+*.swp
+*.swo
+
+# virtual environments
+.env
+
+# Reports
+reports/
+
+# vs code
+.vscode/
+
+# SQL
+.sqlite3
+.sql

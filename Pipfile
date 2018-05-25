@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+pylint = "*"
+"pypiwin32" = "*"
+"autopep8" = "*"
+
+[packages]
+Scrapy = "*"
+"beautifulsoup4" = "*"
+pymongo = "*"
+python-dateutil = "*"
+
+[requires]
+python_version = "3.6"
