@@ -19,3 +19,4 @@ class BingPartnersSpider(BasePartnersSpider):
     name_selector = 'h1.page-title'
     ranking_selector = 'div.partner-badge-large > div.type'
     brief_selector = 'section.rule-bottom > div.container > div.row > div:nth-of-type(3) > div'
+    industries_selector = 'div.row.industries-list'

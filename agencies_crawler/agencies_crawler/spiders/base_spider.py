@@ -52,10 +52,9 @@ class BasePartnersSpider(scrapy.Spider):
     def get_agency_industries(self, soup):
         """ Gets agency brief """
         if self.industries_selector:
-            ul = soup.select_one(self.industries_selector)
-            liArray = ul.find_all('li')
-            concatString = " -".join([el.get_text().strip() for el in liArray])
-            return concatString
+            item_arr = soup.select_one(self.industries_selector).children
+            string = " -".join([el.get_text().strip() for el in item_arr if el != '\n'])
+            return string
 
     def get_agency_website_url(self, soup):
         """ Gets agency website url """
