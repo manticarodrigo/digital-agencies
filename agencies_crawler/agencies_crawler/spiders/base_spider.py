@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from bs4 import BeautifulSoup
+from bs4.element import NavigableString
 
 class BasePartnersSpider(scrapy.Spider):
     name = 'partners_spider'
@@ -12,6 +13,11 @@ class BasePartnersSpider(scrapy.Spider):
     ranking_selector = None
     brief_selector = None
     industries_selector = None
+    stars_selector = None
+    logo_url_selector = None
+    regions_selector = None
+    services_selector = None
+    phone_selector = None
 
     def get_text_by_selector(self, soup, selector):
         """ Gets text by selector """
@@ -19,12 +25,19 @@ class BasePartnersSpider(scrapy.Spider):
             item = soup.select_one(selector)
             return item.get_text().strip() if item else None
 
-    def get_link_from_selector(self, soup, selector):
-        """ Gets agency website url """
+    def get_attribute_by_selector(self, soup, selector, attribute):
+        """ Gets attribute by selector """
         if selector:
             url = soup.select_one(selector)
             if url is not None:
-                return url.get('href')
+                return url.get(attribute)
+    
+    def get_list_by_selector(self, soup, selector):
+        """ Gets list by selector """
+        if selector:
+            item_arr = soup.select_one(selector).children
+            string = '\n'.join([el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)])
+            return string
 
     def get_profiles_urls(self, soup):
         """ Links to follow up to get content """
@@ -51,14 +64,30 @@ class BasePartnersSpider(scrapy.Spider):
 
     def get_agency_industries(self, soup):
         """ Gets agency industries """
-        if self.industries_selector:
-            item_arr = soup.select_one(self.industries_selector).children
-            string = "\n".join([el.get_text().strip() for el in item_arr if el != '\n'])
-            return string
+        return self.get_list_by_selector(soup, self.industries_selector)
+
+    def get_agency_stars(self, soup):
+        pass
 
     def get_agency_website_url(self, soup):
         """ Gets agency website url """
-        return self.get_link_from_selector(soup, self.website_url_selector)
+        return self.get_attribute_by_selector(soup, self.website_url_selector, 'href')
+
+    def get_agency_logo_url(self, soup):
+        """ Gets agency logo url """
+        return self.get_attribute_by_selector(soup, self.logo_url_selector, 'src')
+    
+    def get_agency_regions(self, soup):
+        """ Gets agency regions """
+        return self.get_list_by_selector(soup, self.regions_selector)
+    
+    def get_agency_services(self, soup):
+        """ Gets agency services """
+        return self.get_list_by_selector(soup, self.services_selector)
+    
+    def get_agency_phone(self, soup):
+        """ Gets agency phone """
+        return self.get_text_by_selector(soup, self.phone_selector)
 
     def parse(self, response):
         # Follow links to post pages
@@ -86,4 +115,9 @@ class BasePartnersSpider(scrapy.Spider):
         agency['ranking'] = self.get_agency_ranking(soup)
         agency['brief'] = self.get_agency_brief(soup)
         agency['industries'] = self.get_agency_industries(soup)
+        agency['stars'] = self.get_agency_stars(soup)
+        agency['logo_url'] = self.get_agency_logo_url(soup)
+        agency['regions'] = self.get_agency_regions(soup)
+        agency['services'] = self.get_agency_services(soup)
+        agency['phone'] = self.get_agency_phone(soup)
         yield agency
