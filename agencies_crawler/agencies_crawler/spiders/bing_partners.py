@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
+from agencies_crawler.spiders.base_spider import BasePartnersSpider 
 
-class BingPartnersSpider(scrapy.Spider):
+
+class BingPartnersSpider(BasePartnersSpider):
     name = 'bing_partners'
     start_urls = [
         'https://advertise.bingads.microsoft.com/en-us/resources/bing-partner-program/partner-directory'
