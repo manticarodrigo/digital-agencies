@@ -33,5 +33,5 @@ class HubspotPartnersSpider(BasePartnersSpider):
     def get_agency_stars(self, soup):
         """ Gets agency stars """
         if self.stars_selector:
-            item_arr = soup.find_all("{0} span.full".format(self.stars_selector))
+            item_arr = soup.select("{0} span.full".format(self.stars_selector))
             return len(item_arr)
