@@ -6,9 +6,18 @@ class BasePartnersSpider(scrapy.Spider):
     name = 'partners_spider'
     links_selector = None
     pagination_selector = None
-    title_selector = None
+    name_selector = None
     short_address_selector = None
     website_url_selector = None
+    ranking_selector = None
+    brief_selector = None
+    industries_selector = None
+
+    def get_text_by_selector(self, soup, selector):
+        """ Gets text by selector """
+        if selector:
+            item = soup.select_one(selector)
+            return item.get_text().strip() if item else None
 
     def get_link_from_selector(self, soup, selector):
         """ Gets agency website url """
@@ -25,14 +34,28 @@ class BasePartnersSpider(scrapy.Spider):
             return None
 
     def get_agency_name(self, soup):
-        """ Gets agency name from the title """
-        title = soup.select_one(self.title_selector)
-        return title.get_text().strip() if title else 'No title found'
+        """ Gets agency name """
+        return self.get_text_by_selector(soup, self.name_selector)
     
     def get_agency_short_address(self, soup):
-        """ Gets agency name from the title """
-        short_address = soup.select_one(self.short_address_selector)
-        return short_address.get_text().strip() if short_address else 'No short address found'
+        """ Gets agency short address """
+        return self.get_text_by_selector(soup, self.short_address_selector)
+    
+    def get_agency_ranking(self, soup):
+        """ Gets agency ranking """
+        return self.get_text_by_selector(soup, self.ranking_selector)
+    
+    def get_agency_brief(self, soup):
+        """ Gets agency brief """
+        return self.get_text_by_selector(soup, self.brief_selector)
+
+    def get_agency_industries(self, soup):
+        """ Gets agency brief """
+        if self.industries_selector:
+            ul = soup.select_one(self.industries_selector)
+            liArray = ul.find_all('li')
+            concatString = " -".join([el.get_text().strip() for el in liArray])
+            return concatString
 
     def get_agency_website_url(self, soup):
         """ Gets agency website url """
@@ -61,4 +84,7 @@ class BasePartnersSpider(scrapy.Spider):
         agency['name'] = self.get_agency_name(soup)
         agency['short_address'] = self.get_agency_short_address(soup)
         agency['website_url'] = self.get_agency_website_url(soup)
+        agency['ranking'] = self.get_agency_ranking(soup)
+        agency['brief'] = self.get_agency_brief(soup)
+        agency['industries'] = self.get_agency_industries(soup)
         yield agency
