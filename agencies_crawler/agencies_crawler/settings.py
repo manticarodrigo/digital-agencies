@@ -88,4 +88,4 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-CLOSESPIDER_ITEMCOUNT = 5
+# CLOSESPIDER_ITEMCOUNT = 5

@@ -10,7 +10,7 @@ class BingPartnersSpider(BasePartnersSpider):
     start_urls = [
         'https://advertise.bingads.microsoft.com/en-us/resources/bing-partner-program/partner-directory'
     ]
-    pagination_selector = None
+    pagination_selector = '#search-result-statistics + li > a'
     links_selector = 'a.profile-link'
     title_selector = 'h1.page-title'
     website_url_selector = (
@@ -30,10 +30,18 @@ class BingPartnersSpider(BasePartnersSpider):
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' + 
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_LanguagesServed_Title' +
         ' + .industries-list')
+    partner_standard_selector = '.partner-item.standard'
 
     def parse(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
+        for partner in soup.select(self.partner_standard_selector):
+            agency = {
+                'name': partner.select_one('h3').get_text().strip(),
+                'location': partner.select_one('.location').get_text().strip(),
+                'website_url': partner.select_one('.link').get_text().strip(),
+            }
+            yield agency
         for link in self.get_profiles_urls(soup):
             request = response.follow(link.get('href'), self.parse_profile)
             try:
