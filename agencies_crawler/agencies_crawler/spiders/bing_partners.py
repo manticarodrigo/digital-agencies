@@ -52,6 +52,8 @@ class BingPartnersSpider(BasePartnersSpider):
         soup = BeautifulSoup(response.text, 'lxml')
         for partner in soup.select(self.partner_standard_selector):
             agency = {
+                'provider': self.name,
+                'source': response.url,
                 'name': partner.select_one('h3').get_text().strip(),
                 'location': partner.select_one('.location').get_text().strip(),
                 'website_url': partner.select_one('.link').get_text().strip(),
