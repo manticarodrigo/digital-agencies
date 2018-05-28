@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 
 # Scrapy settings for agencies_crawler project
 #
@@ -68,10 +69,10 @@ ITEM_PIPELINES =  {
     'agencies_crawler.pipelines.MongoDBPipeline': 400, 
     }
 
-MONGODB_SERVER = "localhost"
-MONGODB_PORT = 27017
-MONGODB_DB = "digital_agencies"
-MONGODB_COLLECTION = "profiles"
+MONGODB_SERVER = os.environ.get('MONGODB_SERVER', 'localhost')
+MONGODB_PORT = os.environ.get('MONGODB_PORT', 27017)
+MONGODB_DB = os.environ.get('MONGODB_DB', 'digital_agencies')
+MONGODB_COLLECTION = os.environ.get('MONGODB_COLLECTION', 'profiles')
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
