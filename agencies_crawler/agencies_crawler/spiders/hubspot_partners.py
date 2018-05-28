@@ -36,9 +36,6 @@ class HubspotPartnersSpider(BasePartnersSpider):
         numbers = [int(s) for s in text.split() if s.isdigit()]
         return numbers[0] if numbers else 0
 
-    def get_agency_awards(self, soup):
-        return self.get_list_by_selector(soup, self.awards_selector)
-
     def get_agency_industries(self, soup):
         """ Gets agency industries """
         more_selector = 'div.directories__toggle-contents'
