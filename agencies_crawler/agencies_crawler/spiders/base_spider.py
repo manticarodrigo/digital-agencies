@@ -8,6 +8,7 @@ class BasePartnersSpider(scrapy.Spider):
     links_selector = None
     pagination_selector = None
     name_selector = None
+    full_address_selector = None
     short_address_selector = None
     website_url_selector = None
     ranking_selector = None
@@ -20,6 +21,9 @@ class BasePartnersSpider(scrapy.Spider):
     logo_url_selector = None
     regions_selector = None
     services_selector = None
+    facebook_url_selector = None
+    twitter_url_selector = None
+    linkedin_url_selector = None
     phone_selector = None
 
     def get_text_by_selector(self, soup, selector):
@@ -37,8 +41,7 @@ class BasePartnersSpider(scrapy.Spider):
     
     def get_list_by_selector(self, soup, selector):
         """ Gets list by selector """
-        # @TODO its failing in some cases
-        if selector:
+        if selector and soup.select_one(selector):
             item_arr = soup.select_one(selector).children
             string = '\n'.join([el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)])
             return string
@@ -54,6 +57,10 @@ class BasePartnersSpider(scrapy.Spider):
         """ Gets agency name """
         return self.get_text_by_selector(soup, self.name_selector)
     
+    def get_agency_full_address(self, soup):
+        """ Gets agency full address """
+        return self.get_text_by_selector(soup, self.full_address_selector)
+
     def get_agency_short_address(self, soup):
         """ Gets agency short address """
         return self.get_text_by_selector(soup, self.short_address_selector)
@@ -88,10 +95,6 @@ class BasePartnersSpider(scrapy.Spider):
     def get_agency_services(self, soup):
         """ Gets agency services """
         return self.get_list_by_selector(soup, self.services_selector)
-    
-    def get_agency_phone(self, soup):
-        """ Gets agency phone """
-        return self.get_text_by_selector(soup, self.phone_selector)
 
     def get_agency_reviews(self, soup):
         pass
@@ -104,6 +107,22 @@ class BasePartnersSpider(scrapy.Spider):
 
     def get_agency_awards(self, soup):
         pass
+
+    def get_agency_facebook_url(self, soup):
+        """ Gets agency facebook url """
+        return self.get_attribute_by_selector(soup, self.facebook_url_selector, 'href')
+    
+    def get_agency_twitter_url(self, soup):
+        """ Gets agency twitter url """
+        return self.get_attribute_by_selector(soup, self.twitter_url_selector, 'href')
+    
+    def get_agency_linkedin_url(self, soup):
+        """ Gets agency linkedin url """
+        return self.get_attribute_by_selector(soup, self.linkedin_url_selector, 'href')
+
+    def get_agency_phone(self, soup):
+        """ Gets agency phone """
+        return self.get_text_by_selector(soup, self.phone_selector)
 
     def parse(self, response):
         # Follow links to post pages
@@ -125,6 +144,7 @@ class BasePartnersSpider(scrapy.Spider):
         agency['provider'] = self.name
         agency['source'] = response.url
         agency['name'] = self.get_agency_name(soup)
+        agency['full_address'] = self.get_agency_full_address(soup)
         agency['short_address'] = self.get_agency_short_address(soup)
         agency['website_url'] = self.get_agency_website_url(soup)
         agency['ranking'] = self.get_agency_ranking(soup)
@@ -138,5 +158,8 @@ class BasePartnersSpider(scrapy.Spider):
         agency['regions'] = self.get_agency_regions(soup)
         agency['services'] = self.get_agency_services(soup)
         agency['awards'] = self.get_agency_awards(soup)
+        agency['facebook_url'] = self.get_agency_facebook_url(soup)
+        agency['twitter_url'] = self.get_agency_twitter_url(soup)
+        agency['linkedin_url'] = self.get_agency_linkedin_url(soup)
         agency['phone'] = self.get_agency_phone(soup)
         yield agency
