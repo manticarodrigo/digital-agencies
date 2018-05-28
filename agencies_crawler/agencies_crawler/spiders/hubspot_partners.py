@@ -7,7 +7,7 @@ from agencies_crawler.spiders.base_spider import BasePartnersSpider
 class HubspotPartnersSpider(BasePartnersSpider):
     name = 'hubspot_partners'
     start_urls = ['https://www.hubspot.com/agencies']
-    pagination_selector = None
+    pagination_selector = 'li.directories__page-disabled + li > a'
     links_selector = 'a.directories__link'
     title_selector = '.partners-details__hero-text > h2'
     short_address_selector = 'p.partners-details__hero-location'
