@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from bs4 import BeautifulSoup
 
 from agencies_crawler.spiders.base_spider import BasePartnersSpider 
 
@@ -23,6 +24,19 @@ class HubspotPartnersSpider(BasePartnersSpider):
     logo_url_selector = 'div.partners-details__hero-image-wrapper > img'
     regions_selector = 'div.partners-regions > ul.partners-details__list.region'
     awards_selector = 'div.certification ul.partners-details__list'
+
+    def parse(self, response):
+        # Follow links to post pages
+        soup = BeautifulSoup(response.text, 'lxml')
+        profiles_urls = self.get_profiles_urls(soup)
+        for link in profiles_urls:
+            request = response.follow(link.get('href'), self.parse_profile)
+            yield request
+
+        # Follow pagination links
+        next_page = self.get_next_page(soup)
+        if next_page and len(profiles_urls) > 0: # hubsput has a bug on pagination
+            yield response.follow(next_page, callback=self.parse)
 
     def get_next_page(self, soup):
         if self.pagination_selector:
