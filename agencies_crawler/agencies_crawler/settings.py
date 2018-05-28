@@ -64,9 +64,14 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'agencies_crawler.pipelines.AgenciesCrawlerPipeline': 300,
-#}
+ITEM_PIPELINES =  {
+    'agencies_crawler.pipelines.MongoDBPipeline': 400, 
+    }
+
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "digital_agencies"
+MONGODB_COLLECTION = "profiles"
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
