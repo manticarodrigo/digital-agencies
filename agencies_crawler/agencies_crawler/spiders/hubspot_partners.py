@@ -7,7 +7,7 @@ from agencies_crawler.spiders.base_spider import BasePartnersSpider
 class HubspotPartnersSpider(BasePartnersSpider):
     name = 'hubspot_partners'
     start_urls = ['https://www.hubspot.com/agencies']
-    pagination_selector = 'li.directories__page-disabled + li > a'
+    pagination_selector = '.directories__pagination ul li > a'
     links_selector = 'a.directories__link'
     title_selector = '.partners-details__hero-text > h2'
     short_address_selector = 'p.partners-details__hero-location'
@@ -23,6 +23,12 @@ class HubspotPartnersSpider(BasePartnersSpider):
     logo_url_selector = 'div.partners-details__hero-image-wrapper > img'
     regions_selector = 'div.partners-regions > ul.partners-details__list.region'
     awards_selector = 'div.certification ul.partners-details__list'
+
+    def get_next_page(self, soup):
+        if self.pagination_selector:
+            next_page = soup.select(self.pagination_selector)[-1]
+            if next_page is not None:
+                return next_page.get('href')
 
     def get_agency_reviews(self, soup):
         """ Gets agency reviews """

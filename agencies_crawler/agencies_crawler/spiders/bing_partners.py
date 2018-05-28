@@ -68,8 +68,6 @@ class BingPartnersSpider(BasePartnersSpider):
             yield request
 
         # Follow pagination links
-        if self.pagination_selector:
-            next_page = soup.select_one(self.pagination_selector)
-            if next_page is not None:
-                yield response.follow(
-                    next_page.get('href'), callback=self.parse)
+        next_page = self.get_next_page(soup)
+        if next_page:
+            yield response.follow(next_page, callback=self.parse)
