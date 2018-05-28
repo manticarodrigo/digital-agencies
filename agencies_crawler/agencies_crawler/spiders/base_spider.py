@@ -42,7 +42,7 @@ class BasePartnersSpider(scrapy.Spider):
     def get_list_by_selector(self, soup, selector):
         """ Gets list by selector """
         # @TODO its failing in some cases
-        if selector:
+        if selector and soup.select_one(selector):
             item_arr = soup.select_one(selector).children
             string = '\n'.join([el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)])
             return string
