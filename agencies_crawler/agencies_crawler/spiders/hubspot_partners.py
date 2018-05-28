@@ -35,7 +35,7 @@ class HubspotPartnersSpider(BasePartnersSpider):
 
     def get_agency_industries(self, soup):
         """ Gets agency industries """
-        if self.industries_selector:
+        if self.industries_selector and soup.select_one(self.industries_selector):
             item_arr = soup.select_one(self.industries_selector).find_all('li')
             second_item_arr = soup.select_one('div.directories__toggle-contents').find_all('li')
             string = ('\n'.join([el.get_text().strip() for el in item_arr]) 
