@@ -42,9 +42,11 @@ class HubspotPartnersSpider(BasePartnersSpider):
     def get_agency_industries(self, soup):
         """ Gets agency industries """
         more_selector = 'div.directories__toggle-contents'
-        if self.industries_selector and soup.select_one(self.industries_selector) and soup.select_one(more_selector):
-            string = self.get_list_by_selector(soup, self.industries_selector) + '\n' + self.get_list_by_selector(soup, more_selector)
-            return string
+        if self.industries_selector and soup.select_one(self.industries_selector):
+            result = self.get_list_by_selector(soup, self.industries_selector)
+            if soup.select_one(more_selector):
+                result += self.get_list_by_selector(soup, more_selector)
+            return result
 
     def get_agency_stars(self, soup):
         """ Gets agency stars """

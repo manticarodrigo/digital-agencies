@@ -43,15 +43,13 @@ class BasePartnersSpider(scrapy.Spider):
         """ Gets list by selector """
         if selector and soup.select_one(selector):
             item_arr = soup.select_one(selector).children
-            string = '\n'.join([el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)])
-            return string
+            result = [el.get_text().strip() for el in item_arr if not isinstance(el, NavigableString)]
+            return result if result else None # we don't want an empty array
 
     def get_profiles_urls(self, soup):
         """ Links to follow up to get content """
         if self.links_selector:
             return soup.select(self.links_selector)
-        else:
-            return None
 
     def get_agency_name(self, soup):
         """ Gets agency name """
