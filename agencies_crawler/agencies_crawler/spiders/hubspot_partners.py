@@ -25,6 +25,7 @@ class HubspotPartnersSpider(BasePartnersSpider):
     regions_selector = 'div.partners-regions > ul.partners-details__list.region'
 
     def get_agency_reviews(self, soup):
+        """ Gets agency reviews """
         text = self.get_text_by_selector(soup, self.partners_text_selector)
         numbers = [int(s) for s in text.split() if s.isdigit()]
         return numbers[0] if numbers else 0
@@ -33,9 +34,9 @@ class HubspotPartnersSpider(BasePartnersSpider):
         """ Gets agency industries """
         if self.industries_selector:
             item_arr = soup.select_one(self.industries_selector).find_all('li')
-            string = '\n'.join([el.get_text().strip() for el in item_arr])
             second_item_arr = soup.select_one('div.directories__toggle-contents').find_all('li')
-            string += '\n' + '\n'.join([el.get_text().strip() for el in second_item_arr])  # NOQA
+            string = ('\n'.join([el.get_text().strip() for el in item_arr]) 
+            + '\n' + '\n'.join([el.get_text().strip() for el in second_item_arr]))  # NOQA
             return string
     
     def get_agency_stars(self, soup):
