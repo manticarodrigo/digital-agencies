@@ -102,6 +102,9 @@ class BasePartnersSpider(scrapy.Spider):
     def get_agency_languages(self, soup):
         return self.get_list_by_selector(soup, self.languages_selector)
 
+    def get_agency_awards(self, soup):
+        pass
+
     def parse(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
@@ -135,5 +138,6 @@ class BasePartnersSpider(scrapy.Spider):
         agency['logo_url'] = self.get_agency_logo_url(soup)
         agency['regions'] = self.get_agency_regions(soup)
         agency['services'] = self.get_agency_services(soup)
+        agency['awards'] = self.get_agency_awards(soup)
         agency['phone'] = self.get_agency_phone(soup)
         yield agency

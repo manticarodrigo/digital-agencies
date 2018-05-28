@@ -23,11 +23,15 @@ class HubspotPartnersSpider(BasePartnersSpider):
     stars_selector = 'div.partners-details-card-ratings--stars'
     logo_url_selector = 'div.partners-details__hero-image-wrapper > img'
     regions_selector = 'div.partners-regions > ul.partners-details__list.region'
+    awards_selector = 'div.certification ul.partners-details__list'
 
     def get_agency_reviews(self, soup):
         text = self.get_text_by_selector(soup, self.partners_text_selector)
         numbers = [int(s) for s in text.split() if s.isdigit()]
         return numbers[0] if numbers else 0
+
+    def get_agency_awards(self, soup):
+        return self.get_list_by_selector(soup, self.awards_selector)
 
     def get_agency_industries(self, soup):
         """ Gets agency industries """
