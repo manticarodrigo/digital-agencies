@@ -119,9 +119,8 @@ class BasePartnersSpider(scrapy.Spider):
                 yield response.follow(
                     next_page.get('href'), callback=self.parse)
 
-
     def parse_profile(self, response):
-        agency = {}
+        agency = response.meta.get('agency', {})
         soup = BeautifulSoup(response.text, 'lxml')
         agency['provider'] = self.name
         agency['source'] = response.url

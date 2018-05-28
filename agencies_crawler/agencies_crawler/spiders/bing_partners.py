@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from bs4 import BeautifulSoup
 
 from agencies_crawler.spiders.base_spider import BasePartnersSpider
 
@@ -29,3 +30,23 @@ class BingPartnersSpider(BasePartnersSpider):
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' + 
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_LanguagesServed_Title' +
         ' + .industries-list')
+
+    def parse(self, response):
+        # Follow links to post pages
+        soup = BeautifulSoup(response.text, 'lxml')
+        for link in self.get_profiles_urls(soup):
+            request = response.follow(link.get('href'), self.parse_profile)
+            try:
+                request.meta['agency'] = {
+                    'full_address': link.parent.find_previous_sibling().get_text().strip()
+                }
+            except:
+                pass
+            yield request
+
+        # Follow pagination links
+        if self.pagination_selector:
+            next_page = soup.select_one(self.pagination_selector)
+            if next_page is not None:
+                yield response.follow(
+                    next_page.get('href'), callback=self.parse)
