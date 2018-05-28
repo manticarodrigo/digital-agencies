@@ -20,6 +20,7 @@ class BasePartnersSpider(scrapy.Spider):
     stars_selector = None
     logo_url_selector = None
     regions_selector = None
+    awards_selector = None
     services_selector = None
     facebook_url_selector = None
     twitter_url_selector = None
@@ -95,16 +96,20 @@ class BasePartnersSpider(scrapy.Spider):
         return self.get_list_by_selector(soup, self.services_selector)
 
     def get_agency_reviews(self, soup):
+        """ Gets agency reviews """
         pass
 
     def get_agency_budget(self, soup):
+        """ Gets agency budget """
         return self.get_text_by_selector(soup, self.budget_selector)
 
     def get_agency_languages(self, soup):
+        """ Gets agency languages """
         return self.get_list_by_selector(soup, self.languages_selector)
 
     def get_agency_awards(self, soup):
-        pass
+        """ Gets agency awards """
+        return self.get_list_by_selector(soup, self.awards_selector)
 
     def get_agency_facebook_url(self, soup):
         """ Gets agency facebook url """
@@ -158,6 +163,7 @@ class BasePartnersSpider(scrapy.Spider):
         agency['stars'] = self.get_agency_stars(soup)
         agency['logo_url'] = self.get_agency_logo_url(soup)
         agency['regions'] = self.get_agency_regions(soup)
+        agency['awards'] = self.get_agency_awards(soup)
         agency['services'] = self.get_agency_services(soup)
         agency['awards'] = self.get_agency_awards(soup)
         agency['facebook_url'] = self.get_agency_facebook_url(soup)
