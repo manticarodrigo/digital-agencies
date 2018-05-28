@@ -123,6 +123,12 @@ class BasePartnersSpider(scrapy.Spider):
     def get_agency_phone(self, soup):
         """ Gets agency phone """
         return self.get_text_by_selector(soup, self.phone_selector)
+    
+    def get_next_page(self, soup):
+        if self.pagination_selector:
+            next_page = soup.select_one(self.pagination_selector)
+            if next_page is not None:
+                return next_page.get('href')
 
     def parse(self, response):
         # Follow links to post pages
@@ -132,11 +138,9 @@ class BasePartnersSpider(scrapy.Spider):
             yield request
 
         # Follow pagination links
-        if self.pagination_selector:
-            next_page = soup.select_one(self.pagination_selector)
-            if next_page is not None:
-                yield response.follow(
-                    next_page.get('href'), callback=self.parse)
+        next_page = self.get_next_page(soup)
+        if next_page:
+            yield response.follow(next_page, callback=self.parse)
 
     def parse_profile(self, response):
         agency = response.meta.get('agency', {})
