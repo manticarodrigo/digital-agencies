@@ -70,7 +70,7 @@ ITEM_PIPELINES =  {
     }
 
 MONGODB_SERVER = os.environ.get('MONGODB_SERVER', 'localhost')
-MONGODB_PORT = os.environ.get('MONGODB_PORT', 27017)
+MONGODB_PORT = int(os.environ.get('MONGODB_PORT', 27017))
 MONGODB_DB = os.environ.get('MONGODB_DB', 'digital_agencies')
 MONGODB_COLLECTION = os.environ.get('MONGODB_COLLECTION', 'profiles')
 
