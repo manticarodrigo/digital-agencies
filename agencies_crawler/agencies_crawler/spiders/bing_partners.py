@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib import parse
+
 import scrapy
 from bs4 import BeautifulSoup
 
@@ -53,6 +55,7 @@ class BingPartnersSpider(BasePartnersSpider):
     email_selector = (
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' +
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_SocialTiles_Email_Content')
+    map_selector = '.bing-maps-container > iframe'
 
     partner_standard_selector = '.partner-item.standard'
 
@@ -91,6 +94,17 @@ class BingPartnersSpider(BasePartnersSpider):
         """ Gets agency linkedin url """
         return get_text_by_selector(soup, self.email_selector)
 
+    def get_agency_coordinates(self, soup):
+        src = get_attribute_by_selector(
+            soup, self.map_selector, 'src')
+
+        if src:
+            parsed = parse.urlparse(src)
+            raw_location = parse.parse_qs(parsed.query).get('pp', [])
+            if raw_location:
+                location = raw_location[0].split('~')
+                return location
+
     def parse(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
@@ -123,5 +137,5 @@ class BingPartnersSpider(BasePartnersSpider):
         agency['facebook_url'] = self.get_agency_facebook_url(soup)
         agency['twitter_url'] = self.get_agency_twitter_url(soup)
         agency['linkedin_url'] = self.get_agency_linkedin_url(soup)
-        # agency['coordinates'] = self.get_agency_coordinates(soup)
+        agency['coordinates'] = self.get_agency_coordinates(soup)
         return agency
