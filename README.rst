@@ -37,3 +37,11 @@ Run Scrappers
 
     $ scrapy crawl spider_name
     $ scrapy crawl hubspot_partners -o reports/test.csv
+
+Run Parser
+^^^^^^^^^^
+
+::
+    
+    $ cd agencies_crawler
+    $ pipenv run python -m agencies_parser.merge_results

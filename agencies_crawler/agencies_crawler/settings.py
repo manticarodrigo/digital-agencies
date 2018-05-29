@@ -65,9 +65,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES =  {
-    'agencies_crawler.pipelines.MongoDBPipeline': 400, 
-    }
+ITEM_PIPELINES = {
+    'agencies_crawler.pipelines.MongoDBPipeline': 400,
+}
 
 MONGODB_SERVER = os.environ.get('MONGODB_SERVER', 'localhost')
 MONGODB_PORT = int(os.environ.get('MONGODB_PORT', 27017))
