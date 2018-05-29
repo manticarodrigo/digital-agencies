@@ -50,6 +50,10 @@ class BingPartnersSpider(BasePartnersSpider):
     phone_selector = (
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' +
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_SocialTiles_Phone_Content')
+    email_selector = (
+        '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' +
+        '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_SocialTiles_Email_Content')
+
     partner_standard_selector = '.partner-item.standard'
 
     def get_agency_badge(self, soup):
@@ -83,6 +87,10 @@ class BingPartnersSpider(BasePartnersSpider):
         return get_attribute_by_selector(
             soup, self.linkedin_url_selector, 'href')
 
+    def get_agency_email(self, soup):
+        """ Gets agency linkedin url """
+        return get_text_by_selector(soup, self.email_selector)
+
     def parse(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
@@ -110,7 +118,7 @@ class BingPartnersSpider(BasePartnersSpider):
         agency['badge'] = self.get_agency_badge(soup)
         agency['description'] = self.get_agency_description(soup)
         agency['areas_of_expertise'] = self.get_areas_of_expertise(soup)
-        # agency['email'] = self.get_agency_email(soup)
+        agency['email'] = self.get_agency_email(soup)
         agency['phone'] = self.get_agency_phone(soup)
         agency['facebook_url'] = self.get_agency_facebook_url(soup)
         agency['twitter_url'] = self.get_agency_twitter_url(soup)
