@@ -14,6 +14,9 @@ Scrapy = "*"
 pymongo = "*"
 python-dateutil = "*"
 requests = "*"
+pandas = "*"
+tldextract = "*"
+xlsxwriter = "*"
 
 [requires]
 python_version = "3.6"
