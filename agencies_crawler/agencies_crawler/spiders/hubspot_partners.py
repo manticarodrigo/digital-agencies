@@ -23,7 +23,7 @@ class HubspotPartnersSpider(BasePartnersSpider):
     about_selector = 'div.partners-details__about-container > p'
     industries_selector = 'div.partners-details__fieldset.industry > ul.partners-details__list'
     partners_text_selector = '.partners-card-ratings > p'
-    budget_selector = '.partners-details__fieldset.budget .circle.upper'
+    budget_selector = '.partners-details__fieldset.budget .circle'
     languages_selector = '.partners-details__list.language'
     stars_selector = 'div.partners-details-card-ratings--stars'
     logo_url_selector = 'div.partners-details__hero-image-wrapper > img'

@@ -1,5 +1,6 @@
 import pymongo
 import pandas as pd
+import numpy as np
 import datetime
 
 from scrapy.conf import settings
@@ -16,24 +17,24 @@ class AgenciesParser(object):
         db = connection[settings['MONGODB_DB']]
         self.collection = db[settings['MONGODB_COLLECTION']]
 
-    def pick_one(self, df, label):
-        bing = '{0}_bing'.format(label)
-        hubspot = '{0}_hubspot'.format(label)
-        return df[bing] if not df[bing].empty else df[hubspot]
+    def pick_one(self, df, label, label_bing=None, label_hubspot=None):
+        if not label_bing and not label_hubspot:
+            label_bing = '{0}_bing'.format(label)
+            label_hubspot = '{0}_hubspot'.format(label)
+        return np.where(
+            df[label_bing].notna(), df[label_bing], df[label_hubspot])
 
     def main(self):
         df1 = pd.DataFrame.from_dict(list(
             self.collection.find({'provider': 'bing_partners'})))
+
         df2 = pd.DataFrame.from_dict(list(
             self.collection.find({'provider': 'hubspot_partners'})))
 
-        df1['domain'] = df1['website_url'].map(get_domain)
-        df1['is_bing_partner'] = True
-        df1.set_index('domain')
-
-        df2['domain'] = df2['website_url'].map(get_domain)
-        df2['is_hubspot_partner'] = True
-        df2.set_index('domain')
+        for df in [df1, df2]:
+            df['domain'] = df['website_url'].map(get_domain)
+            df.drop(columns=['_id'], inplace=True)
+            df.set_index('domain')
 
         df3 = pd.merge(
             df1, df2, on='domain', how='outer',
@@ -41,8 +42,6 @@ class AgenciesParser(object):
 
         unique_columns = [
             'domain',
-            'is_bing_partner',
-            'is_hubspot_partner',
             'location',
             'tier',
             'badge',
@@ -57,16 +56,34 @@ class AgenciesParser(object):
             'linkedin_url',
             'phone',
             'coordinates',
+            'source_bing',
+            'source_hubspot'
         ]
         df4 = df3[unique_columns]
-        # df4.set_index('domain')
+        df4['is_bing_partner'] = df3['provider_bing'].notna()
+        df4['is_hubspot_partner'] = df3['provider_hubspot'].notna()
+
+        df4 = df4.rename(columns={
+            'location': 'full_address',
+            'areas_of_expertise': 'services',
+        })
 
         common_columns = [
-            column.replace('_bing', '') for column in df3.columns if column.endswith('_bing')]
+            'name',
+            'short_address',
+            'website_url',
+            'industries',
+            'budget',  # we may transform this to float
+            'logo_url',
+            'languages',
+        ]
+
+        # df4['address_accurate'] = df3['short_address_bing'] == df3['short_address_hubspot']
 
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
 
+        # Export
         now = datetime.datetime.now()
         to_excel(
             df4, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
