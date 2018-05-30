@@ -72,7 +72,8 @@ ITEM_PIPELINES = {
 MONGODB_SERVER = os.environ.get('MONGODB_SERVER', 'localhost')
 MONGODB_PORT = int(os.environ.get('MONGODB_PORT', 27017))
 MONGODB_DB = os.environ.get('MONGODB_DB', 'digital_agencies')
-MONGODB_COLLECTION = os.environ.get('MONGODB_COLLECTION', 'profiles')
+MONGODB_RAW_COLLECTION = os.environ.get('MONGODB_RAW_COLLECTION', 'profiles_raw')
+MONGODB_MERGED_COLLECTION = os.environ.get('MONGODB_MERGED_COLLECTION', 'profiles_merged')
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

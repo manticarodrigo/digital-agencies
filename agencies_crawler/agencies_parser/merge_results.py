@@ -15,7 +15,8 @@ class AgenciesParser(object):
             settings['MONGODB_PORT']
         )
         db = connection[settings['MONGODB_DB']]
-        self.collection = db[settings['MONGODB_COLLECTION']]
+        self.raw_collection = db[settings['MONGODB_RAW_COLLECTION']]
+        self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']]
 
     def pick_one(self, df, label, label_bing=None, label_hubspot=None):
         if not label_bing and not label_hubspot:
@@ -26,10 +27,10 @@ class AgenciesParser(object):
 
     def main(self):
         df1 = pd.DataFrame.from_dict(list(
-            self.collection.find({'provider': 'bing_partners'})))
+            self.raw_collection.find({'provider': 'bing_partners'})))
 
         df2 = pd.DataFrame.from_dict(list(
-            self.collection.find({'provider': 'hubspot_partners'})))
+            self.raw_collection.find({'provider': 'hubspot_partners'})))
 
         for df in [df1, df2]:
             df['domain'] = df['website_url'].map(get_domain)
@@ -85,8 +86,11 @@ class AgenciesParser(object):
 
         # Export
         now = datetime.datetime.now()
-        to_excel(
-            df4, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
+        # to_excel(
+        #     df4, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
+        
+        # Insert in db
+        self.merged_collection.insert_many(df4.to_dict('records'))
 
 if __name__ == '__main__':
     instance = AgenciesParser()
