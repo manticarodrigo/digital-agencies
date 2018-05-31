@@ -61,8 +61,8 @@ class AgenciesParser(object):
             'source_hubspot'
         ]
         df4 = df3[unique_columns]
-        # df4['is_bing_partner'] = df3['provider_bing'].notna()
-        # df4['is_hubspot_partner'] = df3['provider_hubspot'].notna()
+        df4['is_bing_partner'] = df3['provider_bing'].notna()
+        df4['is_hubspot_partner'] = df3['provider_hubspot'].notna()
 
         df4 = df4.rename(columns={
             'location': 'full_address',
@@ -83,17 +83,14 @@ class AgenciesParser(object):
 
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
-        
-        profiles = df4.to_dict('records')
-        new_profiles = []
-        for profile in profiles:
-            profile['source'] = {'bing':profile['source_bing'], 'hubspot':profile['source_hubspot']}
-            profile.pop('source_bing', None)
-            profile.pop('source_hubspot', None)
-            new_profiles.append(profile)
 
+        # Export
+        now = datetime.datetime.now()
+        # to_excel(
+        #     df4, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
+        
         # Insert in db
-        self.merged_collection.insert_many(new_profiles)
+        self.merged_collection.insert_many(df4.to_dict('records'))
 
 if __name__ == '__main__':
     instance = AgenciesParser()
