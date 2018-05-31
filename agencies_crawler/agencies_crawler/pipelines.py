@@ -13,7 +13,7 @@ class MongoDBPipeline(object):
             settings['MONGODB_PORT']
         )
         db = connection[settings['MONGODB_DB']]
-        self.collection = db[settings['MONGODB_COLLECTION']]
+        self.collection = db[settings['MONGODB_RAW_COLLECTION']]
 
     def process_item(self, item, spider):
         self.collection.update(
