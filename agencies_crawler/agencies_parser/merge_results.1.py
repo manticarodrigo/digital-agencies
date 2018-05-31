@@ -61,13 +61,13 @@ class AgenciesParser(object):
             'source_hubspot'
         ]
         df4 = df3[unique_columns]
+        df4['is_bing_partner'] = df3['provider_bing'].notna()
+        df4['is_hubspot_partner'] = df3['provider_hubspot'].notna()
+
         df4 = df4.rename(columns={
             'location': 'full_address',
             'areas_of_expertise': 'services',
         })
-
-        df4['sources'] = df4.apply(
-            lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
 
         common_columns = [
             'name',
@@ -79,18 +79,18 @@ class AgenciesParser(object):
             'languages',
         ]
 
+        # df4['address_accurate'] = df3['short_address_bing'] == df3['short_address_hubspot']
+
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
 
-        # Insert in db
-        print(df4.info())
-        self.merged_collection.insert_many(df4.to_dict('records'))
-
-    def export(df):
         # Export
         now = datetime.datetime.now()
-        to_excel(
-            df, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
+        # to_excel(
+        #     df4, file_name='test_{0}.xlsx'.format(now.strftime('%Y%m%d_%H%M')))
+        
+        # Insert in db
+        self.merged_collection.insert_many(df4.to_dict('records'))
 
 if __name__ == '__main__':
     instance = AgenciesParser()
