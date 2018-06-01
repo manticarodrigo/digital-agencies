@@ -17,6 +17,7 @@ requests = "*"
 pandas = "*"
 tldextract = "*"
 xlsxwriter = "*"
+usaddress = "*"
 
 [requires]
 python_version = "3.6"
