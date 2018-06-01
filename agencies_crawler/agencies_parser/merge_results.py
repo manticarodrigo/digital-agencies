@@ -68,6 +68,7 @@ class AgenciesParser(object):
 
         df4['sources'] = df4.apply(
             lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
+        df4.drop(columns=['source_bing', 'source_hubspot'], inplace=True)
 
         common_columns = [
             'name',
@@ -83,8 +84,15 @@ class AgenciesParser(object):
             df4[column] = self.pick_one(df3, column)
 
         # Insert in db
+        df4 = df4.where((pd.notnull(df4)), None)
         print(df4.info())
-        self.merged_collection.insert_many(df4.to_dict('records'))
+        
+        to_write = []
+        for item in df4.to_dict('records'):
+            to_write.append(
+                pymongo.UpdateOne({'domain': item.get('domain')}, {'$set': item}, upsert=True))
+        
+        self.merged_collection.bulk_write(to_write)
 
     def export(df):
         # Export
