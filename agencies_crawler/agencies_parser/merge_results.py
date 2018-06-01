@@ -66,9 +66,20 @@ class AgenciesParser(object):
             'areas_of_expertise': 'services',
         })
 
+        # Sources hash
         df4['sources'] = df4.apply(
             lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
         df4.drop(columns=['source_bing', 'source_hubspot'], inplace=True)
+
+        # Ranking hash
+        df4['ranking'] = df4.apply(
+            lambda row: {'badge': row.badge, 'tier': row.tier}, axis=1)
+        df4.drop(columns=['badge', 'tier'], inplace=True)
+
+        # Social_urls hash
+        df4['social_urls'] = df4.apply(
+            lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
+        df4.drop(columns=['facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
 
         common_columns = [
             'name',
