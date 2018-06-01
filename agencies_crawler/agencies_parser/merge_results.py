@@ -25,6 +25,30 @@ class AgenciesParser(object):
         return np.where(
             df[label_bing].notna(), df[label_bing], df[label_hubspot])
 
+    def hasNumbers(self, string):
+        return any(char.isdigit() for char in string)
+
+    def value_to_float(self, x):
+        if type(x) == float or type(x) == int or x is None:
+            return x
+        if type(x) == str:
+            x = x.split(' ')[0]
+            x = x.split('–')[0]
+            x = x.split('/')[0]
+            x = ''.join([s.strip('$') for s in x])
+            x = ''.join([s.strip('+') for s in x])
+            x = ''.join([s for s in x.split() if self.hasNumbers(s)])
+            # print(x)
+        if 'K' in x:
+            if len(x) > 1:
+                return float(x.replace('K', '')) * 1000
+            return 1000.0
+        if 'M' in x:
+            if len(x) > 1:
+                return float(x.replace('M', '')) * 1000000
+            return 1000000.0
+        return 0.0
+
     def main(self):
         df1 = pd.DataFrame.from_dict(list(
             self.raw_collection.find({'provider': 'bing_partners'})))
@@ -36,6 +60,7 @@ class AgenciesParser(object):
             df['domain'] = df['website_url'].map(get_domain)
             df.drop(columns=['_id'], inplace=True)
             df.set_index('domain')
+            df['budget'] = df['budget'].apply(self.value_to_float)
 
         df3 = pd.merge(
             df1, df2, on='domain', how='outer',
@@ -86,7 +111,7 @@ class AgenciesParser(object):
             'short_address',
             'website_url',
             'industries',
-            'budget',  # we may transform this to float
+            'budget',
             'logo_url',
             'languages',
         ]
