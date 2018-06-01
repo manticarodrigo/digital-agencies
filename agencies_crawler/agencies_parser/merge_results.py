@@ -66,18 +66,43 @@ class AgenciesParser(object):
 
         try:
             if raw_address:
-                address, address_type = usaddress.parse(raw_address)
+                address, address_type = usaddress.tag(
+                    raw_address, tag_mapping)
                 address_dict = dict(address)
         except:
             pass
         
         return (
             address_dict.get('address1'),
-            address_dict.get('PlaceName'),
-            address_dict.get('StateName'),
-            address_dict.get('ZipCode'),
-            address_dict.get('CountryName')
+            address_dict.get('city'),
+            address_dict.get('state'),
+            address_dict.get('zip_code'),
+            address_dict.get('country')
         )
+
+    def hasNumbers(self, string):
+        return any(char.isdigit() for char in string)
+
+    def value_to_float(self, x):
+        if type(x) == float or type(x) == int or x is None:
+            return x
+        if type(x) == str:
+            x = x.split(' ')[0]
+            x = x.split('–')[0]
+            x = x.split('/')[0]
+            x = ''.join([s.strip('$') for s in x])
+            x = ''.join([s.strip('+') for s in x])
+            x = ''.join([s for s in x.split() if self.hasNumbers(s)])
+            # print(x)
+        if 'K' in x:
+            if len(x) > 1:
+                return float(x.replace('K', '')) * 1000
+            return 1000.0
+        if 'M' in x:
+            if len(x) > 1:
+                return float(x.replace('M', '')) * 1000000
+            return 1000000.0
+        return 0.0
 
     def main(self):
         """ Main method to execute """
@@ -91,6 +116,7 @@ class AgenciesParser(object):
             df['domain'] = df['website_url'].map(get_domain)
             df.drop(columns=['_id'], inplace=True)
             df.set_index('domain')
+            df['budget'] = df['budget'].apply(self.value_to_float)
 
         df3 = pd.merge(
             df1, df2, on='domain', how='outer',
@@ -118,16 +144,26 @@ class AgenciesParser(object):
             'location': 'full_address',
             'areas_of_expertise': 'services',
         })
-
+        # Sources hash
         df4['sources'] = df3.apply(
             lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
+
+        # Ranking hash
+        df4['ranking'] = df4.apply(
+            lambda row: {'badge': row.badge, 'tier': row.tier}, axis=1)
+        df4.drop(columns=['badge', 'tier'], inplace=True)
+
+        # Social_urls hash
+        df4['social_urls'] = df4.apply(
+            lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
+        df4.drop(columns=['facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
 
         common_columns = [
             'name',
             'short_address',
             'website_url',
             'industries',
-            'budget',  # we may transform this to float
+            'budget',
             'logo_url',
             'languages',
         ]
