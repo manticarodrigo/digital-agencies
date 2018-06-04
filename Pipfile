@@ -17,7 +17,6 @@ requests = "*"
 pandas = "*"
 tldextract = "*"
 xlsxwriter = "*"
-usaddress = "*"
 pycountry = "*"
 
 [requires]
