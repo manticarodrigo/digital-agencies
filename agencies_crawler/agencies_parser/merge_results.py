@@ -178,7 +178,7 @@ class AgenciesParser(object):
         to_write = []
         for item in df.to_dict('records'):
             to_write.append(
-                pymongo.ReplaceOne(
+                pymongo.UpdateOne(
                     {'domain': item.get('domain')}, {'$set': item},
                     upsert=True))
         self.merged_collection.bulk_write(to_write)
