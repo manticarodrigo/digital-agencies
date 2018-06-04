@@ -149,9 +149,8 @@ class AgenciesParser(object):
             lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
         df4['description'] = df3.apply(
             lambda row: {'bing': row.description, 'hubspot': row.about}, axis=1)
-        import pdb; pdb.set_trace()
         df4['coordinates'] = df3[df3.coordinates.notnull()].apply(
-            lambda row: {'lat': row.coordinates[0], 'long': row.coordinates[1]}, axis=1)
+            lambda row: {'lat': float(row.coordinates[0]), 'long': float(row.coordinates[1])}, axis=1)
 
         # Drop columns
         df4.drop(columns=['badge', 'tier', 'facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
