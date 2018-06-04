@@ -25,7 +25,7 @@ class AgenciesParser(object):
             label_bing = '{0}_bing'.format(label)
             label_hubspot = '{0}_hubspot'.format(label)
         return np.where(
-            df[label_bing].notna(), df[label_bing], df[label_hubspot])
+            df[label_hubspot].notna(), df[label_hubspot], df[label_bing])
 
     def get_address_components(self, row):
         """ Parse full and short address """
