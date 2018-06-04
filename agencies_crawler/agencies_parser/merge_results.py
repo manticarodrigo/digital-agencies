@@ -72,13 +72,7 @@ class AgenciesParser(object):
         except:
             pass
         
-        return (
-            address_dict.get('address1'),
-            address_dict.get('city'),
-            address_dict.get('state'),
-            address_dict.get('zip_code'),
-            address_dict.get('country')
-        )
+        return address_dict
 
     def hasNumbers(self, string):
         return any(char.isdigit() for char in string)
@@ -172,9 +166,7 @@ class AgenciesParser(object):
             df4[column] = self.pick_one(df3, column)
 
         # Split address
-        df4['address'], df4['city'], df4['state'], \
-            df4['zip_code'], df4['country'] = zip(
-                *df4.apply(self.get_address_components, axis=1))
+        df4['address'] = df4.apply(self.get_address_components, axis=1)
 
         # Insert in db
         df4 = df4.where((pd.notnull(df4)), None)
