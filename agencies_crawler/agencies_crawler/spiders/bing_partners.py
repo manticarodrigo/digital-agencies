@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from urllib import parse
 
-import scrapy
 from bs4 import BeautifulSoup
 
 from agencies_crawler.spiders.base_spider import BasePartnersSpider
@@ -29,7 +28,9 @@ class BingPartnersSpider(BasePartnersSpider):
     budget_selector = (
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' +
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_InfoTiles_MinBudget_Content')
-    industries_selector = 'div.row.industries-list' # @TODO Review this selector
+    industries_selector = (
+        'p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' + 
+        '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_Verticals_Title + .industries-list')
     logo_url_selector = (
         '#p_lt_ctl01_pageplaceholder_p_lt_WebPartZone3_zoneContent_pageplaceholder' +
         '_p_lt_ctl01_PartnerProfileQueryRepeater_repItems_ctl00_ctl00_Logo_Image')
