@@ -151,6 +151,8 @@ class AgenciesParser(object):
             lambda row: {'badge': row.badge, 'tier': row.tier}, axis=1)
         df4['social_urls'] = df4.apply(
             lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
+        df4['description'] = df3.apply(
+            lambda row: {'bing': row.description, 'hubspot': row.about}, axis=1)
 
         # Drop columns
         df4.drop(columns=['badge', 'tier', 'facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
