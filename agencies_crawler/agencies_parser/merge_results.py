@@ -4,6 +4,7 @@ import pymongo
 import pandas as pd
 import numpy as np
 import datetime
+import pycountry
 
 from scrapy.conf import settings
 from agencies_parser.utils import get_domain, to_excel
@@ -27,6 +28,10 @@ class AgenciesParser(object):
             label_hubspot = '{0}_hubspot'.format(label)
         return np.where(
             df[label_hubspot].notna(), df[label_hubspot], df[label_bing])
+    
+    def merge_unique(self, df):
+        """Merges lists from different sources"""
+
 
     def get_address_components(self, row):
         """ Parse full and short address """
@@ -91,6 +96,21 @@ class AgenciesParser(object):
                 return float(x.replace('M', '')) * 1000000
             return 1000000.0
         return 0.0
+    
+    def cleanse_language(self, language):
+        if language.lower() == 'chinese traditional':
+            return 'Chinese'
+        if language.lower() == 'greek':
+            return 'Mycenaean Greek'
+        if language.lower() == 'mandarin':
+            return 'Mandarin Chinese'
+        if language.lower() == 'cantonese':
+            return 'Yue Chinese'
+        if language.lower() == 'malay':
+            return 'Malay (macrolanguage)'
+        if language.lower() == 'kiswahili':
+            return 'Swahili (macrolanguage)'
+        return language
 
     def main(self):
         """ Main method to execute """
@@ -131,6 +151,8 @@ class AgenciesParser(object):
         df4 = df4.rename(columns={
             'location': 'full_address',
             'areas_of_expertise': 'services',
+            'stars': 'stars_score',
+            'reviews': 'reviews_count',
         })
 
         # Create hashes
@@ -142,13 +164,14 @@ class AgenciesParser(object):
             lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
         df4['description'] = df3.apply(
             lambda row: {'bing': row.description, 'hubspot': row.about}, axis=1)
+        df4['coordinates'] = df3[df3.coordinates.notnull()].apply(
+            lambda row: {'lat': float(row.coordinates[0]), 'long': float(row.coordinates[1])}, axis=1)
 
         common_columns = [
             'name',
             'short_address',
             'website_url',
             'industries',
-            'budget',
             'min_budget',
             'logo_url',
             'languages',
@@ -157,7 +180,12 @@ class AgenciesParser(object):
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
 
-        # Split address
+        # Languages to ISO
+        import pdb; pdb.set_trace()
+        df4['languages'] = df4[df4.languages.notnull()].apply(
+            lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
+
+        # Split address into components
         df4['address'] = df4.apply(self.get_address_components, axis=1)
 
         # Insert in db
