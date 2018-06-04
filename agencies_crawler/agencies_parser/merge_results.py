@@ -1,8 +1,9 @@
+import re
+
 import pymongo
 import pandas as pd
 import numpy as np
 import datetime
-import usaddress
 
 from scrapy.conf import settings
 from agencies_parser.utils import get_domain, to_excel
@@ -17,7 +18,7 @@ class AgenciesParser(object):
         )
         db = connection[settings['MONGODB_DB']]
         self.raw_collection = db[settings['MONGODB_RAW_COLLECTION']]
-        self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']] 
+        self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']]
 
     def pick_one(self, df, label, label_bing=None, label_hubspot=None):
         """Picks one value in case is repeated on different sources"""
@@ -29,49 +30,43 @@ class AgenciesParser(object):
 
     def get_address_components(self, row):
         """ Parse full and short address """
-        raw_address = None
+        raw_address = ''
         address_dict = {}
+        from_full_address = False
 
         if row.full_address is not np.nan:
             raw_address = row.full_address
+            from_full_address = True
+
         elif row.short_address is not np.nan:
             raw_address = row.short_address
-        
-        tag_mapping = {
-            'AddressNumber': 'address1',
-            'StreetName': 'address1',
-            'StreetNamePreDirectional': 'address1',
-            'StreetNamePreModifier': 'address1',
-            'StreetNamePreType': 'address1',
-            'StreetNamePostDirectional': 'address1',
-            'StreetNamePostModifier': 'address1',
-            'StreetNamePostType': 'address1',
-            'CornerOf': 'address1',
-            'IntersectionSeparator': 'address1',
-            'LandmarkName': 'address1',
-            'USPSBoxGroupID': 'address1',
-            'USPSBoxGroupType': 'address1',
-            'USPSBoxID': 'address1',
-            'USPSBoxType': 'address1',
-            'BuildingName': 'address2',
-            'OccupancyType': 'address2',
-            'OccupancyIdentifier': 'address2',
-            'SubaddressIdentifier': 'address2',
-            'SubaddressType': 'address2',
-            'PlaceName': 'city',
-            'StateName': 'state',
-            'ZipCode': 'zip_code',
-            'CountryName': 'country',
-        }
 
-        try:
-            if raw_address:
-                address, address_type = usaddress.tag(
-                    raw_address, tag_mapping)
-                address_dict = dict(address)
-        except:
-            pass
+        if ',' not in raw_address:
+            address_dict['address1'] = raw_address
+        else:
+            address_componets = raw_address.split(',')
+            if len(address_componets) == 4:
+                address_dict['address1'] = address_componets[0]
+                address_dict['address2'] = address_componets[1].strip()
+                address_dict['city'] = address_componets[2].strip().title()
+            elif len(address_componets) == 3 and from_full_address:
+                address_dict['address1'] = address_componets[0]
+                address_dict['city'] = address_componets[1].strip().title()
+            elif not from_full_address:
+                address_dict['city'] = address_componets[0].strip().title()
         
+        # Try to get zip code
+        zip_code = re.search(r'(\d{5})([-])?(\d{4})?', raw_address)
+        address_dict['zip_code'] = ''.join(match for match in zip_code.groups() if match) if zip_code else None
+
+        state = re.search(r'([A-Z]{2})', raw_address)
+        address_dict['state'] = state.group(0) if state else None
+
+        if 'united states' in raw_address.lower():
+            address_dict['country'] = 'US'
+
+        address_dict['full_address'] = raw_address
+
         return address_dict
 
     def hasNumbers(self, string):
@@ -148,9 +143,6 @@ class AgenciesParser(object):
         df4['description'] = df3.apply(
             lambda row: {'bing': row.description, 'hubspot': row.about}, axis=1)
 
-        # Drop columns
-        df4.drop(columns=['badge', 'tier', 'facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
-
         common_columns = [
             'name',
             'short_address',
@@ -170,6 +162,18 @@ class AgenciesParser(object):
 
         # Insert in db
         df4 = df4.where((pd.notnull(df4)), None)
+        
+        # Drop junk columns
+        df4.drop(columns=[
+            'badge',
+            'tier',
+            'facebook_url',
+            'twitter_url',
+            'linkedin_url',
+            'full_address',
+            'short_address',
+        ], inplace=True)
+        
         print(df4.info())
         self.to_database(df4)
         # self.to_csv(df4)
