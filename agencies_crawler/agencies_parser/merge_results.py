@@ -34,7 +34,7 @@ class AgenciesParser(object):
         label_bing = '{0}_bing'.format(column)
         label_hubspot = '{0}_hubspot'.format(column)
         merged_list = df[label_bing] + df[label_hubspot]
-        return merged_list[merged_list.notnull()].apply(lambda col: np.unique(col))
+        return merged_list.apply(lambda col: np.unique(col))
 
     def get_address_components(self, row):
         """ Parse full and short address """
@@ -190,6 +190,7 @@ class AgenciesParser(object):
             df4[column] = self.merge_columns(df3, column)
 
         # Languages to ISO
+        import pdb; pdb.set_trace()
         df4['languages'] = df4[df4.languages.notnull()].apply(
             lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
 
