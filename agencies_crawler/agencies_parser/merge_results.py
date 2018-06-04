@@ -101,6 +101,21 @@ class AgenciesParser(object):
                 return float(x.replace('M', '')) * 1000000
             return 1000000.0
         return 0.0
+    
+    def cleanse_language(self, language):
+        if language.lower() == 'chinese traditional':
+            return 'Chinese'
+        if language.lower() == 'greek':
+            return 'Mycenaean Greek'
+        if language.lower() == 'mandarin':
+            return 'Mandarin Chinese'
+        if language.lower() == 'cantonese':
+            return 'Yue Chinese'
+        if language.lower() == 'malay':
+            return 'Malay (macrolanguage)'
+        if language.lower() == 'kiswahili':
+            return 'Swahili (macrolanguage)'
+        return language
 
     def main(self):
         """ Main method to execute """
@@ -186,21 +201,6 @@ class AgenciesParser(object):
         print(df4.info())
         self.to_database(df4)
         # self.to_csv(df4)
-
-    def cleanse_language(self, language):
-        if language.lower() == 'chinese traditional':
-            return 'Chinese'
-        if language.lower() == 'greek':
-            return 'Mycenaean Greek'
-        if language.lower() == 'mandarin':
-            return 'Mandarin Chinese'
-        if language.lower() == 'cantonese':
-            return 'Yue Chinese'
-        if language.lower() == 'malay':
-            return 'Malay (macrolanguage)'
-        if language.lower() == 'kiswahili':
-            return 'Swahili (macrolanguage)'
-        return language
 
     def to_database(self, df):
         to_write = []
