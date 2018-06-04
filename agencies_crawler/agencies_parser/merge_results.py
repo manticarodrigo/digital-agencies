@@ -17,7 +17,7 @@ class AgenciesParser(object):
         )
         db = connection[settings['MONGODB_DB']]
         self.raw_collection = db[settings['MONGODB_RAW_COLLECTION']]
-        self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']]
+        self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']] 
 
     def pick_one(self, df, label, label_bing=None, label_hubspot=None):
         """Picks one value in case is repeated on different sources"""
@@ -27,7 +27,7 @@ class AgenciesParser(object):
         return np.where(
             df[label_bing].notna(), df[label_bing], df[label_hubspot])
 
-    def get_spplited_address(self, row):
+    def get_address_components(self, row):
         """ Parse full and short address """
         raw_address = None
         address_dict = {}
@@ -84,16 +84,15 @@ class AgenciesParser(object):
         return any(char.isdigit() for char in string)
 
     def value_to_float(self, x):
+        """ Convert budget string to float """
         if type(x) == float or type(x) == int or x is None:
             return x
         if type(x) == str:
             x = x.split(' ')[0]
             x = x.split('–')[0]
             x = x.split('/')[0]
-            x = ''.join([s.strip('$') for s in x])
-            x = ''.join([s.strip('+') for s in x])
+            x = x.replace('$','').replace('+', '').replace(',', '')
             x = ''.join([s for s in x.split() if self.hasNumbers(s)])
-            # print(x)
         if 'K' in x:
             if len(x) > 1:
                 return float(x.replace('K', '')) * 1000
@@ -116,7 +115,7 @@ class AgenciesParser(object):
             df['domain'] = df['website_url'].map(get_domain)
             df.drop(columns=['_id'], inplace=True)
             df.set_index('domain')
-            df['budget'] = df['budget'].apply(self.value_to_float)
+            df['min_budget'] = df['budget'].apply(self.value_to_float)
 
         df3 = pd.merge(
             df1, df2, on='domain', how='outer',
@@ -144,19 +143,17 @@ class AgenciesParser(object):
             'location': 'full_address',
             'areas_of_expertise': 'services',
         })
-        # Sources hash
+
+        # Create hashes
         df4['sources'] = df3.apply(
             lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
-
-        # Ranking hash
         df4['ranking'] = df4.apply(
             lambda row: {'badge': row.badge, 'tier': row.tier}, axis=1)
-        df4.drop(columns=['badge', 'tier'], inplace=True)
-
-        # Social_urls hash
         df4['social_urls'] = df4.apply(
             lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
-        df4.drop(columns=['facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
+
+        # Drop columns
+        df4.drop(columns=['badge', 'tier', 'facebook_url', 'twitter_url', 'linkedin_url'], inplace=True)
 
         common_columns = [
             'name',
@@ -164,6 +161,7 @@ class AgenciesParser(object):
             'website_url',
             'industries',
             'budget',
+            'min_budget',
             'logo_url',
             'languages',
         ]
@@ -174,13 +172,13 @@ class AgenciesParser(object):
         # Split address
         df4['address'], df4['city'], df4['state'], \
             df4['zip_code'], df4['country'] = zip(
-                *df4.apply(self.get_spplited_address, axis=1))
+                *df4.apply(self.get_address_components, axis=1))
 
         # Insert in db
         df4 = df4.where((pd.notnull(df4)), None)
         print(df4.info())
-        # self.export(df4)
         self.to_database(df4)
+        # self.to_csv(df4)
 
     def to_database(self, df):
         to_write = []
@@ -191,7 +189,7 @@ class AgenciesParser(object):
                     upsert=True))
         self.merged_collection.bulk_write(to_write)
 
-    def export(self, df):
+    def to_csv(self, df):
         # Export
         now = datetime.datetime.now()
         to_excel(
