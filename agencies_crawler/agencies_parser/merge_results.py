@@ -20,17 +20,20 @@ class AgenciesParser(object):
         self.raw_collection = db[settings['MONGODB_RAW_COLLECTION']]
         self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']] 
 
-    def pick_one(self, df, label, label_bing=None, label_hubspot=None):
+    def pick_one(self, df, column, label_bing=None, label_hubspot=None):
         """Picks one value in case is repeated on different sources"""
         if not label_bing and not label_hubspot:
-            label_bing = '{0}_bing'.format(label)
-            label_hubspot = '{0}_hubspot'.format(label)
+            label_bing = '{0}_bing'.format(column)
+            label_hubspot = '{0}_hubspot'.format(column)
         return np.where(
             df[label_hubspot].notna(), df[label_hubspot], df[label_bing])
     
-    def merge_unique(self, df):
+    def merge_columns(self, df, column):
         """Merges lists from different sources"""
-
+        label_bing = '{0}_bing'.format(column)
+        label_hubspot = '{0}_hubspot'.format(column)
+        merged_list = df[label_bing] + df[label_hubspot]
+        return merged_list[merged_list.notnull()].apply(lambda col: np.unique(col))
 
     def get_address_components(self, row):
         """ Parse full and short address """
@@ -182,14 +185,19 @@ class AgenciesParser(object):
             'industries',
             'min_budget',
             'logo_url',
+        ]
+
+        merge_columns = [
             'languages',
         ]
 
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
 
+        for column in merge_columns:
+            df4[column] = self.merge_columns(df3, column)
+
         # Languages to ISO
-        import pdb; pdb.set_trace()
         df4['languages'] = df4[df4.languages.notnull()].apply(
             lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
 
