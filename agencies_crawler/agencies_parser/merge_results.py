@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import usaddress
+import pycountry
 
 from scrapy.conf import settings
 from agencies_parser.utils import get_domain, to_excel
@@ -26,6 +27,10 @@ class AgenciesParser(object):
             label_hubspot = '{0}_hubspot'.format(label)
         return np.where(
             df[label_hubspot].notna(), df[label_hubspot], df[label_bing])
+    
+    def merge_unique(self, df):
+        """Merges lists from different sources"""
+
 
     def get_address_components(self, row):
         """ Parse full and short address """
@@ -160,7 +165,6 @@ class AgenciesParser(object):
             'short_address',
             'website_url',
             'industries',
-            'budget',
             'min_budget',
             'logo_url',
             'languages',
@@ -169,7 +173,12 @@ class AgenciesParser(object):
         for column in common_columns:
             df4[column] = self.pick_one(df3, column)
 
-        # Split address
+        # Languages to ISO
+        import pdb; pdb.set_trace()
+        df4['languages'] = df4[df4.languages.notnull()].apply(
+            lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
+
+        # Split address into components
         df4['address'] = df4.apply(self.get_address_components, axis=1)
 
         # Insert in db
@@ -177,6 +186,21 @@ class AgenciesParser(object):
         print(df4.info())
         self.to_database(df4)
         # self.to_csv(df4)
+
+    def cleanse_language(self, language):
+        if language.lower() == 'chinese traditional':
+            return 'Chinese'
+        if language.lower() == 'greek':
+            return 'Mycenaean Greek'
+        if language.lower() == 'mandarin':
+            return 'Mandarin Chinese'
+        if language.lower() == 'cantonese':
+            return 'Yue Chinese'
+        if language.lower() == 'malay':
+            return 'Malay (macrolanguage)'
+        if language.lower() == 'kiswahili':
+            return 'Swahili (macrolanguage)'
+        return language
 
     def to_database(self, df):
         to_write = []
