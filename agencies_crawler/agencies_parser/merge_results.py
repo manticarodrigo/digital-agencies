@@ -168,7 +168,7 @@ class AgenciesParser(object):
         df4['sources'] = df3.apply(
             lambda row: {
                 'bing': row.source_bing if row.source_bing is not np.nan else None,
-                'hubspot': row.source_bing if row.source_bing is not np.nan else None
+                'hubspot': row.source_hubspot if row.source_hubspot is not np.nan else None
             }, axis=1)
         df4['ranking'] = df4.apply(
             lambda row: {
