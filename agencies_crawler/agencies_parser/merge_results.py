@@ -29,16 +29,23 @@ class AgenciesParser(object):
         return np.where(
             df[label_hubspot].notna(), df[label_hubspot], df[label_bing])
     
-    def merge_columns(self, df, column):
+    def merge_columns_lists(self, row, column):
         """Merges lists from different sources"""
         label_bing = '{0}_bing'.format(column)
         label_hubspot = '{0}_hubspot'.format(column)
-        merged_list = df[label_bing] + df[label_hubspot]
-        return merged_list.apply(lambda col: np.unique(col))
+
+        if isinstance(row[label_bing], list) and isinstance(row[label_hubspot], list):
+            return row[label_bing] + row[label_hubspot]
+        elif isinstance(row[label_bing], list):
+            return row[label_bing]
+        elif isinstance(row[label_hubspot], list):
+            return row[label_hubspot]
+        else:
+            return None
 
     def get_address_components(self, row):
         """ Parse full and short address """
-        raw_address = ''
+        raw_address = None
         address_dict = {}
         from_full_address = False
 
@@ -49,42 +56,41 @@ class AgenciesParser(object):
         elif row.short_address is not np.nan:
             raw_address = row.short_address
 
-        if ',' not in raw_address:
-            address_dict['address1'] = raw_address
-        else:
-            address_componets = raw_address.split(',')
-            if len(address_componets) == 4:
-                address_dict['address1'] = address_componets[0]
-                address_dict['address2'] = address_componets[1].strip()
-                address_dict['city'] = address_componets[2].strip().title()
-            elif len(address_componets) == 3 and from_full_address:
-                address_dict['address1'] = address_componets[0]
-                address_dict['city'] = address_componets[1].strip().title()
-            elif not from_full_address:
-                address_dict['city'] = address_componets[0].strip().title()
-        
-        # Try to get zip code
-        zip_code = re.search(r'(\d{5})([-])?(\d{4})?', raw_address)
-        address_dict['zip_code'] = ''.join(match for match in zip_code.groups() if match) if zip_code else None
+        if raw_address:
+            if ',' not in raw_address:
+                address_dict['address1'] = raw_address
+            else:
+                address_componets = raw_address.split(',')
+                if len(address_componets) == 4:
+                    address_dict['address1'] = address_componets[0]
+                    address_dict['address2'] = address_componets[1].strip()
+                    address_dict['city'] = address_componets[2].strip().title()
+                elif len(address_componets) == 3 and from_full_address:
+                    address_dict['address1'] = address_componets[0]
+                    address_dict['city'] = address_componets[1].strip().title()
+                elif not from_full_address:
+                    address_dict['city'] = address_componets[0].strip().title()
+            
+            # Try to get zip code
+            zip_code = re.search(r'(\d{5})([-])?(\d{4})?', raw_address)
+            address_dict['zip_code'] = ''.join(match for match in zip_code.groups() if match) if zip_code else None
 
-        state = re.search(r'([A-Z]{2})', raw_address)
-        address_dict['state'] = state.group(0) if state else None
+            state = re.search(r'([A-Z]{2})', raw_address)
+            address_dict['state'] = state.group(0) if state else None
 
-        if 'united states' in raw_address.lower():
-            address_dict['country'] = 'US'
-
-        address_dict['full_address'] = raw_address
-
-        return address_dict
+            if 'united states' in raw_address.lower():
+                address_dict['country'] = 'US'
+            address_dict['full_address'] = raw_address
+            return address_dict
 
     def hasNumbers(self, string):
         return any(char.isdigit() for char in string)
 
     def value_to_float(self, x):
         """ Convert budget string to float """
-        if type(x) == float or type(x) == int or x is None:
+        if isinstance(x, (float, int)) or x is None:
             return x
-        if type(x) == str:
+        if isinstance(x, str):
             x = x.split(' ')[0]
             x = x.split('–')[0]
             x = x.split('/')[0]
@@ -187,10 +193,9 @@ class AgenciesParser(object):
             df4[column] = self.pick_one(df3, column)
 
         for column in merge_columns:
-            df4[column] = self.merge_columns(df3, column)
+            df4[column] = df3.apply(self.merge_columns_lists, axis=1, column=column)
 
         # Languages to ISO
-        import pdb; pdb.set_trace()
         df4['languages'] = df4[df4.languages.notnull()].apply(
             lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
 
