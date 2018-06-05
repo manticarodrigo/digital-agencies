@@ -166,13 +166,26 @@ class AgenciesParser(object):
 
         # Create hashes
         df4['sources'] = df3.apply(
-            lambda row: {'bing': row.source_bing, 'hubspot': row.source_hubspot}, axis=1)
+            lambda row: {
+                'bing': row.source_bing if row.source_bing is not np.nan else None,
+                'hubspot': row.source_bing if row.source_bing is not np.nan else None
+            }, axis=1)
         df4['ranking'] = df4.apply(
-            lambda row: {'badge': row.badge, 'tier': row.tier}, axis=1)
+            lambda row: {
+                'badge': row.badge if row.badge is not np.nan else None,
+                'tier': row.tier if row.tier is not np.nan else None
+            }, axis=1)
         df4['social_urls'] = df4.apply(
-            lambda row: {'facebook': row.facebook_url, 'twitter': row.twitter_url, 'linkedin': row.linkedin_url}, axis=1)
+            lambda row: {
+                'facebook': row.facebook_url if row.facebook_url is not np.nan else None,
+                'twitter': row.twitter_url if row.twitter_url is not np.nan else None,
+                'linkedin': row.linkedin_url if row.linkedin_url is not np.nan else None
+            }, axis=1)
         df4['description'] = df3.apply(
-            lambda row: {'bing': row.description, 'hubspot': row.about}, axis=1)
+            lambda row: {
+                'bing': row.description if row.description is not np.nan else None,
+                'hubspot': row.about if row.about is not np.nan else None
+            }, axis=1)
         df4['coordinates'] = df3[df3.coordinates.notnull()].apply(
             lambda row: {'lat': float(row.coordinates[0]), 'long': float(row.coordinates[1])}, axis=1)
 
@@ -197,7 +210,8 @@ class AgenciesParser(object):
 
         # Languages to ISO
         df4['languages'] = df4[df4.languages.notnull()].apply(
-            lambda row: [pycountry.languages.lookup(self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
+            lambda row: [pycountry.languages.lookup(
+                self.cleanse_language(language)).alpha_3 for language in row.languages], axis=1)
 
         # Split address into components
         df4['address'] = df4.apply(self.get_address_components, axis=1)
