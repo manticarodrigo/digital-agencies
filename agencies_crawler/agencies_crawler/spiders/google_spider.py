@@ -19,8 +19,9 @@ class GooglePartnersSpider(scrapy.Spider):
     def parse(self, response):
         json_data = json.loads(response.text)
         print(json_data)
-        next_page_token = json_data['nextPageToken']
-        while next_page_token is not None:
+        
+        next_page_token = json_data.get('nextPageToken')
+        if next_page_token:
             print(next_page_token)
             PARAMS['pageToken'] = next_page_token
             yield response.follow(BASE_URL + parse.urlencode(PARAMS), callback=self.parse)
