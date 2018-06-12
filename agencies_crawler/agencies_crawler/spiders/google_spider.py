@@ -18,10 +18,16 @@ class GooglePartnersSpider(scrapy.Spider):
 
     def parse(self, response):
         json_data = json.loads(response.text)
-        print(json_data)
-        
+
+        companies = json_data.get('companies')
+        for company in companies:
+            print(company)
+            company['provider'] = 'google_partners'
+            company['source'] = response.url
+            company['name'] = company['localizedInfos'][0]['displayName']
+            yield company
+
         next_page_token = json_data.get('nextPageToken')
         if next_page_token:
-            print(next_page_token)
             PARAMS['pageToken'] = next_page_token
             yield response.follow(BASE_URL + parse.urlencode(PARAMS), callback=self.parse)
