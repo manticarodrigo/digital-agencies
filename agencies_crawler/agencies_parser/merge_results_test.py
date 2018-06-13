@@ -31,16 +31,24 @@ class AgenciesParser(object):
         df3 = pd.DataFrame.from_dict(list(
             self.raw_collection.find({'provider': 'google_partners'})))
 
-        for df in [df1, df2]:
+        df3 = df3.rename(columns={
+            'websiteUrl': 'website_url'
+        })    
+
+        for df in [df1, df2, df3]:
             df['domain'] = df['website_url'].map(get_domain)
             df.drop(columns=['_id'], inplace=True)
             df.set_index('domain')
 
         df4 = pd.merge(
-            df1, df2, df3, on='domain', how='outer',
-            suffixes=('_bing', '_hubspot', '_google'))
+            df1, df2, on='domain', how='outer',
+            suffixes=('_bing', '_hubspot'))
         
-        print(df4.info())
+        df5 = pd.merge(
+            df3, df4, on='domain', how='outer',
+            suffixes=('_google', ''))
+        
+        print(df5.info())
 
         
 if __name__ == '__main__':
