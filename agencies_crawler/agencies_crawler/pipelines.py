@@ -16,7 +16,8 @@ class MongoDBPipeline(object):
         self.collection = db[settings['MONGODB_RAW_COLLECTION']]
 
     def process_item(self, item, spider):
+        unique_key = 'id' if item.get('id') else 'name'
         self.collection.update(
-            {'name': item.get('name'), 'provider': item.get('provider')}, item, upsert=True)
+            {unique_key: item.get(unique_key), 'provider': item.get('provider')}, item, upsert=True)
         logging.debug('Agency added to MongoDB')
         return item
