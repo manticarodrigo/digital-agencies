@@ -36,5 +36,5 @@ class GooglePartnersSpider(scrapy.Spider):
         if next_page_token:
             self.queries['pageToken'] = next_page_token
             yield response.follow(
-                self.base_url + parse.urlencode(self.queries),
+                self.base_url + '?' + parse.urlencode(self.queries),
                 callback=self.parse)
