@@ -12,12 +12,20 @@ from agencies_parser.utils import get_domain, to_excel
 
 class AgenciesParser(object):
     """ Agencies Profiles parser """
+
+    # Top elements have more priority
+    priority_order = {
+        'google_partners',
+        'hubspot_partners',
+        'bing_partners',
+    }
+
     def __init__(self):
-        connection = pymongo.MongoClient(
+        self.connection = pymongo.MongoClient(
             settings['MONGODB_SERVER'],
             settings['MONGODB_PORT']
         )
-        db = connection[settings['MONGODB_DB']]
+        db = self.connection[settings['MONGODB_DB']]
         self.raw_collection = db[settings['MONGODB_RAW_COLLECTION']]
         self.merged_collection = db[settings['MONGODB_MERGED_COLLECTION']]
 
@@ -242,6 +250,7 @@ class AgenciesParser(object):
                     {'domain': item.get('domain')}, {'$set': item},
                     upsert=True))
         self.merged_collection.bulk_write(to_write)
+        self.connection.close()
 
     def to_csv(self, df):
         # Export
