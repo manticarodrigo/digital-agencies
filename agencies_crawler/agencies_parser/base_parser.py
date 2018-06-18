@@ -54,6 +54,7 @@ class BaseParser(object):
     budget_key = 'budget'
     full_address_key = 'full_address'
     short_address_key = 'short_address'
+    website_url_key = 'website_url'
 
     def __init__(self):
         connection = pymongo.MongoClient(
@@ -67,12 +68,33 @@ class BaseParser(object):
         if self.provider:
             return self.raw_collection.find({
                 'provider': self.provider
-            }).sort('$natural')
+            }).sort('$natural').limit(4)
         else:
             raise ValueError('No provider name set')
 
     def get_custom_fields(self, result, item):
         pass
+
+    def get_address(self, item):
+        if self.full_address_key or self.short_address_key:
+            return get_address_components(
+                item.get(self.full_address_key),
+                item.get(self.short_address_key)
+            )
+
+    def get_budget(self, item):
+        if self.budget_key and item.get(self.budget_key):
+            return parse_budged(item.get(self.budget_key))
+
+    def get_iso_languages(self, item):
+        if self.languages_key and item.get(self.languages_key):
+            languages = []
+            for language in item.get(self.languages_key):
+                languages.append(
+                    pycountry.languages.lookup(
+                        clean_language(language)).alpha_3)
+            return languages
+
 
     def parse(self):
         raw_data = self.get_raw_data()
@@ -83,8 +105,8 @@ class BaseParser(object):
         result = self.base_result.copy() # Prevent mutation
 
         # Domain (primary key)
-        if item.get('website_url'):
-            result['domain'] = get_domain(item.get('website_url'))
+        if item.get(self.website_url_key):
+            result['domain'] = get_domain(item.get(self.website_url_key))
 
         # Common keys fields, keys that have the same name
         for key in self.no_transform:
@@ -95,24 +117,15 @@ class BaseParser(object):
             if item.get(raw_key):
                 result[merged_key] = {self.short_name: item[raw_key]}
 
+        
         # Address
-        if self.full_address_key or self.short_address_key:
-            result['address'] = get_address_components(
-                item.get(self.full_address_key),
-                item.get(self.short_address_key)
-            )
+        result['address'] = self.get_address(item)
 
         # Budget
-        if self.budget_key and item.get(self.budget_key):
-            result['min_budget'] = parse_budged(item.get(self.budget_key))
+        result['budget'] = self.get_budget(item)
 
         # Language
-        if self.languages_key and item.get(self.languages_key):
-            result['languages'] = []
-            for language in item.get(self.languages_key):
-                result['languages'].append(
-                    pycountry.languages.lookup(
-                        clean_language(language)).alpha_3)
+        result['languages'] = self.get_iso_languages(item)
 
         self.get_custom_fields(result, item)
 

@@ -12,7 +12,7 @@ class HubspotParser(BaseParser):
     provider = 'hubspot_partners'
     short_name = 'hubspot'
 
-    common_keys = [
+    no_transform = [
         'name', 'website_url', 'phone', 'email',
         'industries', 'logo_url',
     ]
