@@ -22,7 +22,7 @@ def to_excel(
     writer.save()
 
 
-def get_address_components(full_address, short_address):
+def get_address_components(full_address=None, short_address=None):
     """ Parse full and short address """
     raw_address = None
     address_dict = {}
@@ -57,7 +57,7 @@ def get_address_components(full_address, short_address):
         state = re.search(r'([A-Z]{2})', raw_address)
         address_dict['state'] = state.group(0) if state else None
 
-        if 'United States'.lower() in raw_address.lower():
+        if 'United States'.lower() in raw_address.lower() or state or zip_code:
             address_dict['country'] = 'US'
         address_dict['full_address'] = raw_address
         return address_dict
