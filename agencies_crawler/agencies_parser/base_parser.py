@@ -68,7 +68,7 @@ class BaseParser(object):
         if self.provider:
             return self.raw_collection.find({
                 'provider': self.provider
-            }).sort('$natural').limit(4)
+            }).sort('$natural')
         else:
             raise ValueError('No provider name set')
 
@@ -104,6 +104,8 @@ class BaseParser(object):
     def parse_item(self, item):
         result = self.base_result.copy() # Prevent mutation
 
+        print('Parsing: ' + item.get('name'))
+
         # Domain (primary key)
         if item.get(self.website_url_key):
             result['domain'] = get_domain(item.get(self.website_url_key))
@@ -129,5 +131,5 @@ class BaseParser(object):
 
         self.get_custom_fields(result, item)
 
-        pprint(result)
+        # pprint(result)
         return result

@@ -10,7 +10,7 @@ from .base_parser import BaseParser
 
 NIO_VALUE = 31.67 # 17/06/18
 
-class HubspotParser(BaseParser):
+class GoogleParser(BaseParser):
     provider = 'google_partners'
     short_name = 'google'
 
@@ -27,6 +27,7 @@ class HubspotParser(BaseParser):
     website_url_key = 'websiteUrl'
 
     def get_address(self, item):
+        # @TODO Split address
         return {
             'full_address': item.get('locations', [{}])[0].get('address')
         }
@@ -46,10 +47,14 @@ class HubspotParser(BaseParser):
     def get_iso_languages(self, item):
         languages = []
         for info in item.get('localizedInfos'):
-            code = info.get('languageCode')
-            alpha_3 = pycountry.languages.lookup(code.split('-')[0]).alpha_3
-            if alpha_3 not in languages:
-                languages.append(alpha_3)
+            try:
+                code = info.get('languageCode').split('-')[0]
+                code = 'he' if code == 'iw' else code
+                alpha_3 = pycountry.languages.lookup(code).alpha_3
+                if alpha_3 not in languages:
+                    languages.append(alpha_3)
+            except LookupError as e:
+                print('LangCode not found: ' + str(e))
         return languages
 
 
@@ -59,10 +64,11 @@ class HubspotParser(BaseParser):
 
         # Coordinates
         cords = item.get('locations', [{}])[0].get('latLng')
-        result['coordinates'] = {
-            'lat': float(cords.get('latitude')),
-            'long': float(cords.get('longitude'))
-        }
+        if cords:
+            result['coordinates'] = {
+                'lat': float(cords.get('latitude')),
+                'long': float(cords.get('longitude'))
+            }
 
         # Description
         result['description'] = {
@@ -72,6 +78,10 @@ class HubspotParser(BaseParser):
         # logo
         result['logo_url'] = item.get('publicProfile', {}).get('displayImageUrl')
 
+        # @TODO
+        # specializationStatus
+        # profile_page
+        # certificationStatuses
 
 if __name__ == '__main__':
     instance = HubspotParser()
