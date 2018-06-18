@@ -75,15 +75,20 @@ class GoogleParser(BaseParser):
             self.short_name: item.get('localizedInfos', [{}])[0].get('overview')
         }
 
-        # logo
+        # Logo URL
         result['logo_url'] = item.get('publicProfile', {}).get('displayImageUrl')
 
+        # Specialization Status
+        specializations = item.get('specializationStatus', [{}])
+        result['specializations'] = {}
+        result['specializations']['passed'] = [x['badgeSpecialization'] for x in specializations if x['badgeSpecializationState'] == 'BADGE_SPECIALIZATION_STATE_PASSED']
+        result['specializations']['not_passed'] = [x['badgeSpecialization'] for x in specializations if x['badgeSpecializationState'] == 'BADGE_SPECIALIZATION_STATE_NOT_PASSED']
+        print(result['specializations'])
         # @TODO
-        # specializationStatus
         # profile_page
         # certificationStatuses
 
 if __name__ == '__main__':
-    instance = HubspotParser()
+    instance = GoogleParser()
     instance.parse()
 
