@@ -9,50 +9,38 @@ from agencies_crawler.utils import (
     get_list_by_selector,
 )
 
-raw_cities = [
-    "New York", "San Francisco", "Los Angeles", "Chicago", "Atlanta", "Miami",
-    "Seattle", "Boston", "San Diego", "Philadelphia", "Washington DC",
-    "Portland", "Dallas", "Austin", "Houston", "Denver", "Charlotte",
-    "Detroit", "Orlando", "Columbus", "Cincinnati", "Minneapolis", "Cleveland",
-    "Tampa", "New York", "San Francisco", "Los Angeles", "Chicago", "Atlanta",
-    "Miami", "Seattle", "Boston", "San Diego", "Philadelphia", "Washington DC",
-    "Portland", "Dallas", "Austin", "Houston", "Denver", "Charlotte",
-    "Detroit", "Orlando", "Columbus", "Cleveland", "Tampa", "London",
-    "Birmingham", "Leeds", "Manchester", "Bristol", "Liverpool", "Nottingham",
-    "Newcastle", "Sheffield", "Bath", "Oxford", "Cardiff", "Bournemouth",
-    "Brighton", "Southampton", "Glasgow", "Edinburgh", "Toronto", "Vancouver",
-    "Montreal", "Calgary", "Ottawa", "Sydney", "Melbourne", "Brisbane",
-    "Perth", "Adelaide", "Canberra", "Amsterdam", "Rotterdam", "Berlin",
-    "Paris", "Barcelona", "Madrid", "Milan", "Brussels", "Dublin", "Stockholm",
-    "Oslo", "Helsinki", "Copenhagen", "Warsaw", "İstanbul", "Dubai",
-    "Abu Dhabi", "Islamabad", "Hong Kong", "Shanghai", "Beijing", "Singapore",
-    "Mumbai", "Manila",
-]
-
 
 class DanSpider(scrapy.Spider):
     name = 'dan_partners'
-    base_url = 'https://digitalagencynetwork.com/agencies/'
-
-    def start_requests(self):
-        urls = [self.base_url + city.replace(
-            ' ', '-').lower() for city in list(set(raw_cities))]
-        return [scrapy.Request(url) for url in urls]
+    start_urls = ['https://digitalagencynetwork.com/agencies/']
 
     def parse(self, response):
+        soup = BeautifulSoup(response.text, 'lxml')
+        for city in soup.select('.dropdown-list.city-list li'):
+            yield response.follow(
+                self.start_urls[0] + city['data-url'] + '/',
+                self.parse_profile)
+
+    def parse_profile(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
-        for obj in soup.select('#AgenciesListing div.agency-info'):
+        # Featured agencies
+        featured_agencies = []
+        for obj in soup.select('#FeaturedCityAgencies div.agency-item.featured'):
+            featured_agencies.append(get_text_by_selector(obj, '.agency-text .wpb_wrapper a'))
+        # List of agencies
+        for obj in soup.select('#AgenciesListing div.agency-item-container'):
             item = {}
             item['source'] = response.url
             item['provider'] = 'dan_partners'
-            item['name'] = get_text_by_selector(obj, 'div.wpb_wrapper > h3')
+            item['name'] = get_text_by_selector(obj, '.agency-content > .wpb_wrapper a')
+            item['is_featured'] = item['name'] in featured_agencies
             item['description'] = get_text_by_selector(
-                obj, 'div.wpb_wrapper > h6')
+                obj, '.agency-content > .wpb_wrapper > h6, .agency-content .wpb_wrapper > p')
             item['logo'] = get_attribute_by_selector(
                 obj, '.vc_single_image-img', 'src')
             item['website_url'] = get_attribute_by_selector(
-                obj, 'div.wpb_wrapper > h3 > a', 'href')
+                obj, '.agency-content > .wpb_wrapper a', 'href')
             item['address'] = get_text_by_selector(
                 obj, '.contact-info .address + p')
             item['phone'] = get_text_by_selector(
