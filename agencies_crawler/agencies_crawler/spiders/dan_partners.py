@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from pprint import pprint
 from bs4 import BeautifulSoup
 
 from agencies_crawler.utils import (
     get_text_by_selector,
     get_attribute_by_selector,
-    get_list_by_selector,
 )
 
 
