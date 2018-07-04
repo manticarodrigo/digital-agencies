@@ -1,0 +1,19 @@
+{
+  "name": "webscraping2.0",
+  "version": "1.0.0",
+  "description": "Scraping test for upcity.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudia+Andrei",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "bottleneck": "^2.5.0",
+    "cheerio": "^1.0.0-rc.2",
+    "fs": "0.0.1-security",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
+  }
+}

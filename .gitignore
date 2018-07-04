@@ -45,3 +45,7 @@ reports/
 # SQL
 .sqlite3
 .sql
+
+# Node
+
+node_modules/

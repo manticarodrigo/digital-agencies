@@ -12,7 +12,7 @@ def get_domain(url):
 
 def to_excel(
         df, file_name='simple-report.xlsx', columns=None, use_index=False):
-    writer = pd.ExcelWriter('reports/%s' % file_name, engine='xlsxwriter')
+    writer = pd.ExcelWriter('%s' % file_name, engine='xlsxwriter')
     extra_params = {}
     if columns:
         extra_params['columns'] = columns

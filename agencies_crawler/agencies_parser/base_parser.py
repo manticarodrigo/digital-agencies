@@ -3,7 +3,8 @@ from pprint import pprint
 import pymongo
 import pycountry
 
-from scrapy.utils.project import get_project_settings
+# from scrapy.utils.project import get_project_settings
+from scrapy.conf import settings as SETTINGS
 
 from .utils import (
     get_address_components,
@@ -12,7 +13,7 @@ from .utils import (
     get_domain,
 )
 
-SETTINGS = get_project_settings()
+# SETTINGS = get_project_settings()
 
 class BaseParser(object):
     provider = None
@@ -58,11 +59,11 @@ class BaseParser(object):
 
     def __init__(self):
         connection = pymongo.MongoClient(
-            SETTINGS['MONGODB_SERVER'],
-            SETTINGS['MONGODB_PORT']
+            'localhost',
+            27017
         )
-        db = connection[SETTINGS['MONGODB_DB']]
-        self.raw_collection = db[SETTINGS['MONGODB_RAW_COLLECTION']]
+        db = connection['digital_agencies']
+        self.raw_collection = db['profiles_raw']
 
     def get_raw_data(self):
         if self.provider:
@@ -115,9 +116,9 @@ class BaseParser(object):
             if item.get(key):
                 result[key] = item[key]
 
-        for merged_key, raw_key  in self.nested_keys_map:
-            if item.get(raw_key):
-                result[merged_key] = {self.short_name: item[raw_key]}
+        # for merged_key, raw_key  in self.nested_keys_map:
+        #     if item.get(raw_key):
+        #         result[merged_key] = {self.short_name: item[raw_key]}
 
         
         # Address
