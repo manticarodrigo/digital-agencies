@@ -75,7 +75,7 @@ class ClutchSpider(scrapy.Spider):
             email_raw = email_script.xpath('/program//var[1]/string/text()')[0].split('#')
             order = email_script.xpath('/program//assign[2]//bracketaccessor/property/number/@value')
             item['email'] = "".join([email_raw[int(x)] for x in order])
-        except IndexError:
+        except (IndexError, AttributeError):
             item['email'] = None
 
         # Getting data from script
