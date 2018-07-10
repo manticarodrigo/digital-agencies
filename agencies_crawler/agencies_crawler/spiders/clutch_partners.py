@@ -14,16 +14,26 @@ from agencies_crawler.utils import (
 
 class ClutchSpider(scrapy.Spider):
     name = 'clutch_partners'
-    start_urls = ['https://clutch.co/profile/blue-fountain-media', 'https://clutch.co/profile/deksia']
-
-    # def parse(self, response):
-    #     soup = BeautifulSoup(response.text, 'lxml')
-    #     for city in soup.select('.dropdown-list.city-list li'):
-    #         yield response.follow(
-    #             self.start_urls[0] + city['data-url'] + '/',
-    #             self.parse_profile)
+    start_urls = [
+        'https://clutch.co/agencies',
+        'https://clutch.co/seo-firms',
+        'https://clutch.co/web-developers',
+        'https://clutch.co/developers',
+        'https://clutch.co/web-designers',
+        'https://clutch.co/directory/mobile-application-developers'
+    ]
 
     def parse(self, response):
+        soup = BeautifulSoup(response.text, 'lxml')
+        for link in soup.select('h3 > span > a'):
+            request = response.follow(link.get('href'), self.parse_profile)
+            yield request
+
+        next_page = soup.select_one('ul.pager li.pager-next > a')
+        if next_page is not None:
+            yield response.follow(next_page.get('href'), callback=self.parse)
+
+    def parse_profile(self, response):
         # Follow links to post pages
         soup = BeautifulSoup(response.text, 'lxml')
         item = {}
@@ -69,7 +79,6 @@ class ClutchSpider(scrapy.Spider):
             item['email'] = None
 
         # Getting data from script
-        # @TODO graphs are not matching
         data_script = soup.find_all('script')[-1].text
         regex = r"jQuery\.extend\(Drupal\.settings, (.*)\);"
         match = re.match(regex, data_script)
