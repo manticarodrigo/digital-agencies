@@ -23,7 +23,7 @@ USER_AGENT = 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) Apple
 ROBOTSTXT_OBEY = True
 
 
-DOWNLOAD_DELAY = 0.25
+DOWNLOAD_DELAY = 2    # 0.25 = 250 ms of delay
 RANDOMIZE_DOWNLOAD_DELAY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
