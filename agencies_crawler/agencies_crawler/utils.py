@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-
 from bs4.element import NavigableString
 
+
+def get_int_from_string(text):
+    try:
+        return int(''.join(ch for ch in text if ch.isdigit()))
+    except ValueError:
+        return None
 
 def get_text_by_selector(soup, selector):
     """ Gets text by selector """
