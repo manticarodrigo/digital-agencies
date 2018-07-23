@@ -37,7 +37,7 @@ module.exports = {
             'provider': obj.provider
         },
         obj,
-        {upsert: true},
+        { upsert: true },
         function(err, data) {
             if (err) {
                 console.log(err);

@@ -8,11 +8,14 @@ var client;
 var updateItem;
 
 mongoUtil.connectToServer(function(err) {
+    // start the rest of your app here
     client = mongoUtil.getClient();
     updateItem = mongoUtil.updateItem;
-    // start the rest of your app here
-    if (err) console.log(err);
-    start();
+    if (err) {
+        console.log(err);
+    } else {
+        start();
+    }
 });
 
 const limiter = new Bottleneck({
@@ -41,10 +44,10 @@ function start() {
         let directoryUrl = prefix + '/directory/?page=' + i;
         promises.push(limiter.schedule({priority: 2}, requestPromise, getOptions(directoryUrl)).then(($) => {
             let promises = [];
-            console.info(`Scheduling: ${directoryUrl}`);
+            console.info(`Scheduling directory: ${directoryUrl}`);
             $('.box-item .profile-link').each(function(index,element) { 
                 let profileUrl = prefix + $(this).attr('href');
-                console.info(`Scheduling: ${profileUrl}`);
+                console.info(`Scheduling profile: ${profileUrl}`);
                 promises.push(limiter.schedule({priority: 1}, requestPromise, getOptions(profileUrl)).then(function($) {
                     console.info(`Parsing: ${profileUrl}`);
                     let promises = [Promise.resolve()];
@@ -116,7 +119,19 @@ function start() {
                     let votes = [];
                     let jobs = [];
                     if(jobsUrl){
-                        //???
+                        promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + jobsUrl)).then(function($){
+                            console.info(`Parsing: ${prefix + jobsUrl}`);
+                            $('.box-item').each(function (i,e) {
+                                jobs.push({
+                                    jobUrl: prefix + $(this).find('.box-info > a').attr('href'),
+                                    name: $(this).find('.box-rows .row:nth-of-type(2)').text().trim(),
+                                    location: $(this).find('.box-rows .row:nth-of-type(1)').text().trim(),
+                                    description: $(this).find('.box-rows .row:nth-of-type(4)').text().trim(),
+                                    field: $(this).find('.footer .box-left').text().trim(),
+                                    posted: $(this).find('.footer .box-right').text().trim()
+                                })
+                            });
+                        }));
                     }
                     if(collectionsUrl){
                         promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + collectionsUrl)).then(function($){
@@ -203,15 +218,15 @@ function start() {
             return promises;
         })
         .then(function () {
+            // // Write to file
+            // fs.writeFile('results.json', JSON.stringify(metadata, null, 4), function(error) {
+            //     if (!error) {
+            //         console.log('JSON file successfully written.')
+            //     } else{
+            //         console.error('Error while writing file' + error);
+            //     }
+            // });
             // Close mongodb
             client.close();
-            // Write to file
-            fs.writeFile('results.json', JSON.stringify(metadata, null, 4), function(error) {
-                if (!error) {
-                    console.log('JSON file successfully written.')
-                } else{
-                    console.error('Error while writing file' + error);
-                }
-            });
         });
-    }
+}
