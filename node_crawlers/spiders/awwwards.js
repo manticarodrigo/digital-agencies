@@ -5,13 +5,13 @@ const cheerio = require('cheerio');
 const Bottleneck = require('bottleneck');
 const mongoUtil = require('../db');
 var client;
-var db;
+var updateItem;
 
 mongoUtil.connectToServer(function(err) {
     client = mongoUtil.getClient();
-    db = mongoUtil.getDb();
+    updateItem = mongoUtil.updateItem;
     // start the rest of your app here
-    console.log(err);
+    if (err) console.log(err);
     start();
 });
 
@@ -62,105 +62,133 @@ function start() {
                         total : $('.bt-laurel .borders').text().trim(),
                         categories : []
                     }; 
-                    // let awardsUrl = $('.bt-laurel').attr('href');
-                    // if (awardsUrl){
-                    //     promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + awardsUrl)).then(function($) {
-                    //         console.info(`Parsing: ${prefix + awardsUrl}`);
-                    //         let awardList = $('ul.js-tab-awards li[data-type]');
-                    //         for (let i = 0; i < awardList.length; i++) {
-                    //             const element = awardList.eq(i);
-                    //             let type = element.data('type');
-                    //             let count = $('.list-tags li.' + type).length;
-                    //             awards.categories.push({type,count})
-                    //         }
-                    //         $ = null;
-                    //     }));
+                    let awardsUrl = $('.bt-laurel').attr('href');
+                    if (awardsUrl){
+                        promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + awardsUrl)).then(function($) {
+                            console.info(`Parsing: ${prefix + awardsUrl}`);
+                            let awardList = $('ul.js-tab-awards li[data-type]');
+                            for (let i = 0; i < awardList.length; i++) {
+                                const element = awardList.eq(i);
+                                let type = element.data('type');
+                                let count = $('.list-tags li.' + type).length;
+                                awards.categories.push({type,count})
+                            }
+                            $ = null;
+                        }));
                         
-                    // }
+                    }
 
                     let projects = [];
-                    // $('.grid ul.list-items div.box-item').each(function(index,element){
-                    //     projects.push({
-                    //         name: $(this).find('.content h3 a').text().trim(),
-                    //         url: $(this).find('.content h3 a').attr('href'),
-                    //         date: $(this).find('.content .box-right').text().trim()
-                    //     });
-                    // });
+                    $('.grid ul.list-items div.box-item').each(function(index,element){
+                        projects.push({
+                            name: $(this).find('.content h3 a').text().trim(),
+                            url: $(this).find('.content h3 a').attr('href'),
+                            date: $(this).find('.content .box-right').text().trim()
+                        });
+                    });
 
-                    // let showMeMore = $('a.item.more').attr('href');
-                    // if(showMeMore){
-                    //     recursiveShowMeMore(showMeMore);
-                    // }
+                    let showMeMore = $('a.item.more').attr('href');
+                    if(showMeMore){
+                        recursiveShowMeMore(showMeMore);
+                    }
 
-                    // function recursiveShowMeMore(url){
-                    //     console.info(`Parsing: ${prefix + url}`);
-                    //     promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + url)).then(function($){
-                    //         $('.grid ul.list-items div.box-item').each(function(index,element){
-                    //             projects.push({
-                    //                 name: $(this).find('.content h3 a').text().trim(),
-                    //                 url: $(this).find('.content h3 a').attr('href'),
-                    //                 date: $(this).find('.content .box-right').text().trim()
-                    //             });
-                    //         });
-                    //         let showMeMore = $('a.item.more').attr('href');
-                    //         if(showMeMore){
-                    //             recursiveShowMeMore(showMeMore);
-                    //         }
-                    //     }));
-                    // }
+                    function recursiveShowMeMore(url){
+                        console.info(`Parsing: ${prefix + url}`);
+                        promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + url)).then(function($){
+                            $('.grid ul.list-items div.box-item').each(function(index,element){
+                                projects.push({
+                                    name: $(this).find('.content h3 a').text().trim(),
+                                    url: $(this).find('.content h3 a').attr('href'),
+                                    date: $(this).find('.content .box-right').text().trim()
+                                });
+                            });
+                            let showMeMore = $('a.item.more').attr('href');
+                            if(showMeMore){
+                                recursiveShowMeMore(showMeMore);
+                            }
+                        }));
+                    }
 
-                    // let jobsUrl = $('.box-heading a[href$="jobs"]').attr('href');
-                    // let collectionsUrl = $('.box-heading a[href$="collections/"]').attr('href');
-                    // let votesUrl = $('.box-heading a[href$="votes"]').attr('href');
+                    let jobsUrl = $('.box-heading a[href$="jobs"]').attr('href');
+                    let collectionsUrl = $('.box-heading a[href$="collections/"]').attr('href');
+                    let votesUrl = $('.box-heading a[href$="votes"]').attr('href');
                     let collections = [];
                     let votes = [];
                     let jobs = [];
-                    // if(jobsUrl){
-                    //     //???
-                    // }
-                    // if(collectionsUrl){
-                    //     promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + collectionsUrl)).then(function($){
-                    //         console.info(`Parsing: ${prefix + collectionsUrl}`);
-                    //         $('.box-item').each(function (i,e) {
-                    //             collections.push({
-                    //                 name: $(this).find('.content h3 a').text().trim(),
-                    //                 collectionUrl: $(this).find('.content h3 a').attr('href'),
-                    //                 count: $(this).find('.text-gray').text(),
-                    //                 curator:{
-                    //                     name: $(this).find('.row-auto strong a').text().trim(),
-                    //                     url: $(this).find('.row-auto strong a').attr('href')
-                    //                 },
-                    //                 followers: $(this).find('.box-users-likes .container-bt-circle span.number').text().trim()
-                    //             })
-                    //         });
-                    //     }));
-                    // }
-                    // if(votesUrl){
-                    //     promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + votesUrl)).then(function($){
-                    //         console.info(`Parsing: ${prefix + votesUrl}`);
-                    //         $('.box-item').each(function (i,e) {
-                    //             votes.push({
-                    //                 site: $(this).find('.content h3 a').text(),
-                    //                 url: $(this).find('.content h3 a').attr('href'),
-                    //                 date: $(this).find('.content .box-right').text().trim(),
-                    //                 score: $(this).find('figure.rollover.darken div.note').text(),
-                    //                 byUser: $(this).find('div.js-user').data('username'),
-                    //             })
-                    //         });
-                    //     }));
-                    // }
+                    if(jobsUrl){
+                        //???
+                    }
+                    if(collectionsUrl){
+                        promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + collectionsUrl)).then(function($){
+                            console.info(`Parsing: ${prefix + collectionsUrl}`);
+                            $('.box-item').each(function (i,e) {
+                                collections.push({
+                                    name: $(this).find('.content h3 a').text().trim(),
+                                    collectionUrl: $(this).find('.content h3 a').attr('href'),
+                                    count: $(this).find('.text-gray').text(),
+                                    curator:{
+                                        name: $(this).find('.row-auto strong a').text().trim(),
+                                        url: $(this).find('.row-auto strong a').attr('href')
+                                    },
+                                    followers: $(this).find('.box-users-likes .container-bt-circle span.number').text().trim()
+                                })
+                            });
+                        }));
+                    }
+                    if(votesUrl){
+                        promises.push(limiter.schedule({priority: 0}, requestPromise, getOptions(prefix + votesUrl)).then(function($){
+                            console.info(`Parsing: ${prefix + votesUrl}`);
+                            $('.box-item').each(function (i,e) {
+                                votes.push({
+                                    site: $(this).find('.content h3 a').text(),
+                                    url: $(this).find('.content h3 a').attr('href'),
+                                    date: $(this).find('.content .box-right').text().trim(),
+                                    score: $(this).find('figure.rollover.darken div.note').text(),
+                                    byUser: $(this).find('div.js-user').data('username'),
+                                })
+                            });
+                        }));
+                    }
                     
                     return Promise.all(promises)
                         .then(function(){
                             let obj = {
-                                name,source,provider,websiteUrl,countrycity,shortDescription,fb,twitter,linkedin,awards,projects,jobs,collections,votes
+                                name,
+                                source,
+                                provider,
+                                websiteUrl,
+                                countrycity,
+                                shortDescription,
+                                fb,
+                                twitter,
+                                linkedin,
+                                awards,
+                                projects,
+                                jobs,
+                                collections,
+                                votes
                             };
+                            if (obj.awards === undefined || obj.awards.length == 0) {
+                                delete obj.awards;
+                            }
+                            if (obj.projects === undefined || obj.projects.length == 0) {
+                                delete obj.projects;
+                            }
+                            if (obj.jobs === undefined || obj.jobs.length == 0) {
+                                delete obj.jobs;
+                            }
+                            if (obj.collections === undefined || obj.collections.length == 0) {
+                                delete obj.collections;
+                            }
+                            if (obj.votes === undefined || obj.votes.length == 0) {
+                                delete obj.votes;
+                            }
                             metadata.push(obj);
-                            // mongo db insertion
-                            db.collection('profiles_raw').insertOne(obj, function(err, res) {
-                                if (err) throw err;
-                                console.log("1 document inserted");
-                            });
+                            // mongo db upsert
+                            updateItem(obj);
+                        })
+                        .catch(err => {
+                            console.log(err);
                         });
                 }));
             });
@@ -186,4 +214,4 @@ function start() {
                 }
             });
         });
-}
+    }

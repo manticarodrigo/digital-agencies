@@ -28,5 +28,23 @@ module.exports = {
   getDb: function() {
     return _db;
   },
+
+  updateItem: function(obj) {
+    let unique_key = obj.id ? 'id' : 'name';
+    _db.collection(MONGODB_RAW_COLLECTION).update(
+        {
+            unique_key: obj[unique_key],
+            'provider': obj.provider
+        },
+        obj,
+        {upsert: true},
+        function(err, data) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("document inserted");
+            }
+    });
+  }
 };
 
