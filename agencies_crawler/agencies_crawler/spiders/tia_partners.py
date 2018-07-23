@@ -26,37 +26,37 @@ class TiaPartnersSpider(BasePartnersSpider):
         for link in profiles_urls:
             request = response.follow(link.get('href'), self.parse_profile)
             yield request
-        
+
         # Follow pagination links
         next_page = self.get_next_page(soup)
         if next_page and len(profiles_urls) > 0:
             yield response.follow(next_page, callback=self.parse)
-    
+
     def get_agency_website_url(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Web' in string)
         if tag is not None:
             return tag.parent.find('a').get_text().strip()
-    
+
     def get_agency_headquarters(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Headquarters' in string)
         if tag is not None:
-            return tag.parent.get_text().strip() 
+            return tag.parent.get_text().strip()
 
     def get_agency_phone(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Phone' in string)
         if tag is not None:
-            return tag.parent.get_text().strip() 
+            return tag.parent.get_text().strip()
 
     def get_agency_staff(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Staff' in string)
         if tag is not None:
-            return tag.parent.get_text().strip() 
-    
+            return tag.parent.get_text().strip()
+
     def get_agency_clients(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Clients' in string)
         if tag is not None:
-            return tag.parent.get_text().strip() 
-    
+            return tag.parent.get_text().strip()
+
     def get_agency_services(self, soup):
         tag = soup.find('strong', string=lambda string: string and 'Services' in string)
         if tag is not None:

@@ -20,10 +20,10 @@ NEWSPIDER_MODULE = 'agencies_crawler.spiders'
 USER_AGENT = 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 
-DOWNLOAD_DELAY = 2    # 0.25 = 250 ms of delay
+DOWNLOAD_DELAY = 0.5    # 0.5 = 500 ms of delay
 RANDOMIZE_DOWNLOAD_DELAY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)

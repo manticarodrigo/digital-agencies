@@ -25,8 +25,9 @@ def get_attribute_by_selector(soup, selector, attribute):
 
 def get_list_by_selector(soup, selector):
     """ Gets list by selector """
-    if selector and soup.select_one(selector):
-        item_arr = soup.select_one(selector).children
+    lst = soup.select_one(selector)
+    if selector and lst:
+        item_arr = lst.children
         result = [
             el.get_text().strip()
             for el in item_arr if not isinstance(el, NavigableString)]
