@@ -14,6 +14,7 @@ from agencies_crawler.utils import (
 
 class ClutchSpider(scrapy.Spider):
     name = 'clutch_partners'
+    # start_urls = ['https://clutch.co/profile/sensis']
     start_urls = [
         'https://clutch.co/agencies',
         'https://clutch.co/seo-firms',
@@ -53,13 +54,19 @@ class ClutchSpider(scrapy.Spider):
         item['website_url'] = get_attribute_by_selector(
             soup, '.quick-menu-element.website-link-a a', 'href')
 
-        item['address'] = {
-            'street': get_text_by_selector(soup, '.street-address'),
-            'locality': get_text_by_selector(soup, '.locality'),
-            'region': get_text_by_selector(soup, 'span.region'),
-            'postal_code': get_text_by_selector(soup, '.postal-code'),
-            'country': get_text_by_selector(soup, '.country-name'),
-        }
+        address = []
+        for obj in soup.find_all('div', class_='adr'):
+            address.append({
+                'street': get_text_by_selector(obj, '.street-address'),
+                'locality': get_text_by_selector(obj, '.locality'),
+                'region': get_text_by_selector(obj, 'span.region'),
+                'postal_code': get_text_by_selector(obj, '.postal-code'),
+                'country': get_text_by_selector(obj, '.country-name'),
+            })
+        if address and len(address) > 0:
+            item['headquarters'] = address[0]
+            item['other_locations'] = address[1:]
+ 
         item['phone'] = get_text_by_selector(soup, '.tel')
         item['min_project_size'] = get_text_by_selector(
             soup, '.field-name-field-pp-min-project-size .field-item')
@@ -84,7 +91,7 @@ class ClutchSpider(scrapy.Spider):
         match = re.match(regex, data_script)
         if match and len(match.groups()) == 1:
             data = json.loads(match.group(1))
-            item['locations'] = [{
+            item['map_locations'] = [{
                 'lat': loc[0] if len(loc) >= 1 else None,
                 'long': loc[1] if len(loc) >= 2 else None,
                 'city': loc[2] if len(loc) >= 3 else None,
