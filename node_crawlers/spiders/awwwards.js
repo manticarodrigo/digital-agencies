@@ -254,6 +254,8 @@ function parseDirectory($, directoryUrl) {
                     .then(($) => {
                         parseDirectory($, url);
                     });
+            } else {
+                client.close();
             }
         })
         .catch(err => {
@@ -266,6 +268,8 @@ function parseDirectory($, directoryUrl) {
                     .then(($) => {
                         parseDirectory($, url);
                     });
+            } else {
+                client.close();
             }
         });
 }
