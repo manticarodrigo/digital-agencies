@@ -75,7 +75,7 @@ ITEM_PIPELINES = {
     'agencies_crawler.pipelines.MongoDBPipeline': 400,
 }
 
-MONGODB_URI = os.environ.get('MONGODB_SERVER', 'mongodb://localhost:27017')
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
 MONGODB_DB = os.environ.get('MONGODB_DB', 'digital_agencies')
 MONGODB_RAW_COLLECTION = os.environ.get('MONGODB_RAW_COLLECTION', 'profiles_raw')
 MONGODB_MERGED_COLLECTION = os.environ.get('MONGODB_MERGED_COLLECTION', 'profiles_merged')
