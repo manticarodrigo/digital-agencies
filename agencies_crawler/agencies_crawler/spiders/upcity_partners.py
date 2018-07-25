@@ -12,7 +12,6 @@ from agencies_crawler.utils import (
     get_list_by_selector,
 )
 
-
 class UpCitySpider(scrapy.Spider):
     name = 'upcity_partners'
     start_urls = [
@@ -43,7 +42,7 @@ class UpCitySpider(scrapy.Spider):
 
         next_page = soup.select_one('.pagination a.next_page')
         if next_page is not None:
-            yield response.follow(next_page.get('href'), callback=self.parse)
+            yield response.follow(next_page.get('href'), callback=self.parse_list)
 
     def parse_profile(self, response):
         # Follow links to post pages
@@ -133,13 +132,16 @@ class UpCitySpider(scrapy.Spider):
                 platform.next for platform in platforms] if platforms else None
         except AttributeError:
             item['web_platforms'] = None
-
-        item['coordinates'] = {
-            'latitude': float(get_attribute_by_selector(
-                soup, '.profile-box-locations .location-map', 'data-lat')),
-            'longitude': float(get_attribute_by_selector(
-                soup, '.profile-box-locations .location-map', 'data-lng'))
-        }
+            
+        try:
+            item['coordinates'] = {
+                'latitude': float(get_attribute_by_selector(
+                    soup, '.profile-box-locations .location-map', 'data-lat')),
+                'longitude': float(get_attribute_by_selector(
+                    soup, '.profile-box-locations .location-map', 'data-lng'))
+            }
+        except TypeError:
+            item['coordinates'] = None
 
         street_address = soup.find('span', itemprop='streetAddress')
         address_locality = soup.find('span', itemprop='addressLocality')
