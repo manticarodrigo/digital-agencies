@@ -1,12 +1,11 @@
 var MongoClient = require('mongodb').MongoClient;
 
-const MONGODB_SERVER = process.env.MONGODB_SERVER || 'localhost';
-const MONGODB_PORT = process.env.MONGODB_PORT || 27017;
+const MONGODB_DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const MONGODB_DB = process.env.MONGODB_DB || 'digital_agencies';
 const MONGODB_RAW_COLLECTION = process.env.MONGODB_RAW_COLLECTION || 'profiles_raw';
 const MONGODB_MERGED_COLLECTION = process.env.MONGODB_MERGED_COLLECTION || 'profiles_merged';
 
-var url = `mongodb://${MONGODB_SERVER}:${MONGODB_PORT}/`;
+var url = MONGODB_DB_URI;
 
 var _client;
 var _db;

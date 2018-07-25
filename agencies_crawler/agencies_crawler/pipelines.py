@@ -8,10 +8,7 @@ from scrapy.exceptions import DropItem
 class MongoDBPipeline(object):
 
     def __init__(self):
-        connection = pymongo.MongoClient(
-            settings['MONGODB_SERVER'],
-            settings['MONGODB_PORT']
-        )
+        connection = pymongo.MongoClient(settings['MONGODB_URI'])
         db = connection[settings['MONGODB_DB']]
         self.collection = db[settings['MONGODB_RAW_COLLECTION']]
 
