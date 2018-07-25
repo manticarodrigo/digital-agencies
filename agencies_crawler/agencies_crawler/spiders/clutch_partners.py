@@ -14,17 +14,26 @@ from agencies_crawler.utils import (
 
 class ClutchSpider(scrapy.Spider):
     name = 'clutch_partners'
-    # start_urls = ['https://clutch.co/profile/sensis']
     start_urls = [
-        'https://clutch.co/agencies',
-        'https://clutch.co/seo-firms',
-        'https://clutch.co/web-developers',
-        'https://clutch.co/developers',
-        'https://clutch.co/web-designers',
-        'https://clutch.co/directory/mobile-application-developers'
+        'https://clutch.co/sitemap'
     ]
+    link_selector = ('.site-map-box-menu .content > ul.site-map-menu > li > ' +
+                     'ul.site-map-menu > li > a')
 
     def parse(self, response):
+        soup = BeautifulSoup(response.text, 'lxml')
+        for link in soup.select(self.link_selector):
+            href = link.get('href')
+            if href.startswith('#'):
+                sublist = link.find_next_sibling('ul')
+                for sublink in sublist.select('li.leaf > a'):
+                    yield response.follow(
+                        sublink.get('href'), callback=self.parse_list)
+            else:
+                request = response.follow(href, self.parse_list)
+            yield request
+
+    def parse_list(self, response):
         soup = BeautifulSoup(response.text, 'lxml')
         for link in soup.select('h3 > span > a'):
             request = response.follow(link.get('href'), self.parse_profile)
@@ -32,7 +41,8 @@ class ClutchSpider(scrapy.Spider):
 
         next_page = soup.select_one('ul.pager li.pager-next > a')
         if next_page is not None:
-            yield response.follow(next_page.get('href'), callback=self.parse)
+            yield response.follow(
+                next_page.get('href'), callback=self.parse_list)
 
     def parse_profile(self, response):
         # Follow links to post pages
@@ -40,6 +50,7 @@ class ClutchSpider(scrapy.Spider):
         item = {}
         item['source'] = response.url
         item['provider'] = self.name
+        item['referer'] = response.request.headers.get('Referer', None)
 
         item['name'] = get_text_by_selector(soup, 'h1.page-title')
         item['slogan'] = get_text_by_selector(soup, '.field-name-field-pp-slogan .field-item')
@@ -63,10 +74,10 @@ class ClutchSpider(scrapy.Spider):
                 'postal_code': get_text_by_selector(obj, '.postal-code'),
                 'country': get_text_by_selector(obj, '.country-name'),
             })
-        if address and len(address) > 0:
+        if address and len(address) >= 1:
             item['headquarters'] = address[0]
             item['other_locations'] = address[1:]
- 
+
         item['phone'] = get_text_by_selector(soup, '.tel')
         item['min_project_size'] = get_text_by_selector(
             soup, '.field-name-field-pp-min-project-size .field-item')

@@ -26,6 +26,8 @@ ROBOTSTXT_OBEY = False
 DOWNLOAD_DELAY = 0.5    # 0.5 = 500 ms of delay
 RANDOMIZE_DOWNLOAD_DELAY = True
 
+DUPEFILTER_DEBUG = True
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
